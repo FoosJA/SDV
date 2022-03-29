@@ -16,11 +16,11 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Client\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -38,8 +38,19 @@
     <Reference Include="DataGridFilterLibrary">
       <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\DataGridFilterLibrary.dll</HintPath>
     </Reference>
+    <Reference Include="Monitel.Mal">
+      <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Monitel.Mal.dll</HintPath>
+    </Reference>
+    <Reference Include="Monitel.Mal.Context.CIM16">
+      <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Monitel.Mal.Context.CIM16.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -58,6 +69,21 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="API\APIrequests.cs" />
+    <Compile Include="API\MyExtentions.cs" />
+    <Compile Include="API\ReadObjectModels.cs" />
+    <Compile Include="ConnectWindow.xaml.cs">
+      <DependentUpon>ConnectWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Foundation\RelayCommand.cs" />
+    <Compile Include="UserControlSDV.xaml.cs">
+      <DependentUpon>UserControlSDV.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModel\HalfHourViewModel.cs" />
+    <Page Include="ConnectWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -66,13 +92,21 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AppViewModel.cs" />
+    <Compile Include="Foundation\APIClient.cs" />
+    <Compile Include="Foundation\NSwagMeasurementValues.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UserControlSDV.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\AppViewModelBase.cs" />
+    <Compile Include="ViewModel\AppViewModelBase.cs" />
+    <Compile Include="Model\OperInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Monitel.Mal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,34 @@ namespace SDV
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private bool _isInitialized;
+        public static  DependencyProperty ModelImageProperty = DependencyProperty.Register("ImModel", typeof(ModelImage), typeof(MainWindow), new FrameworkPropertyMetadata(null));
+        private ModelImage ImModel
+        {
+            get { return (ModelImage)GetValue(ModelImageProperty); }
+            set { SetValue(ModelImageProperty, value); }
+        }
+            public MainWindow()
         {
             InitializeComponent();
+            DataContext = new AppViewModel();
         }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+           /* _isInitialized = true;
+            var viewModel = (this.DataContext as AppViewModel);
+            if (viewModel != null)
+            {
+                viewModel.ConnectExecute();
+            }*/
+           
+        }
+
+     /*   private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
+            connectWindow.ShowDialog();
+            ImModel = connectWindow.mImage;
+        }*/
     }
 }

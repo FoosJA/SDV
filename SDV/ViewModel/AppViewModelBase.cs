@@ -42,7 +42,7 @@ namespace SDV.Model
                                     NotifyCollectionChangedAction.Reset));
             }
         }
-        private readonly string path = @"C:\temp\RapidBusApp.log";
+        private readonly string path = @"C:\temp\SDV.log";
 
         public void Log(string message)
         {

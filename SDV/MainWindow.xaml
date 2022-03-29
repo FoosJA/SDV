@@ -5,8 +5,40 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDV"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Loaded="Window_Loaded"
+        Title="ЛСА формирования СДВ. Фоос Ю.А." Height="450" Width="800"
+        x:Name="myWindow"
+        >   
+    
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+            <RowDefinition Height="3"/>
+            <RowDefinition Height="0.4*"/>
+            <RowDefinition Height="15"/>
+        </Grid.RowDefinitions>
+        <Menu  VerticalAlignment="Center" Background="Transparent" Grid.Row="0">
+            <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>
+        </Menu>
+        <local:UserControlSDV x:Name="Control" Grid.Row="1" />
+        <GridSplitter Grid.Row="2"  Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <Grid Grid.Row="3" >
+            <Border BorderBrush="Gray" BorderThickness="1" Background="WhiteSmoke" >
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="5" Background="White">
+                        <TextBlock  Background="WhiteSmoke" Text="Протокол" Foreground="DimGray" FontWeight="Bold"/>
+                        <ListBox  BorderThickness="0" ItemsSource="{Binding Path=InfoCollect,UpdateSourceTrigger=PropertyChanged }">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Очистить" Command="{Binding ClearInfoCollect}"/>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                        </ListBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        <ProgressBar Grid.Row="4" Value="{Binding CurrentProgress}" Maximum="{Binding ProgressMax}" />
     </Grid>
 </Window>
