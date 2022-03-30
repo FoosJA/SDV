@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDV"
         mc:Ignorable="d"
-         Title="Настройки подключения" Height="230" Width="350">
-    <Grid Margin="10">        
+         Title="Настройки подключения" Height="230" Width="700">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="4*"/>
+            <RowDefinition Height="3*"/>
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="3">
@@ -31,7 +35,22 @@
             <TextBlock Text="№ ИМ  СК-11:"          Grid.Row="2" Grid.Column="0" Margin="2" MaxHeight="25" HorizontalAlignment="Right"/>
             <TextBlock Text="WEB-EP:"               Grid.Row="3" Grid.Column="0" Margin="2" MaxHeight="25" HorizontalAlignment="Right"/>
         </Grid>
-        <Button Grid.Row="1" Content=" Подключение " HorizontalAlignment="Right" MaxWidth="200" MaxHeight="30" Click="Button_Click"/>
-        
+        <Button Grid.Row="1" Grid.Column="1" Content=" Подключение " HorizontalAlignment="Right" MaxWidth="200" MaxHeight="30" Click="Button_Click"/>
+        <Grid Grid.Row="0" Grid.Column="1" Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="130"/>
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="ServerName07TextBox" Grid.Row="0" Grid.Column="1" Margin="2" MaxHeight="25" TextChanged="ServerName07TextBox_TextChanged"/>
+            <TextBox x:Name="InstanseName07TextBox" Grid.Row="1" Grid.Column="1" Margin="2" MaxHeight="25" TextChanged="InstanseName07TextBox_TextChanged" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="2"  Text="Имя сервера СК-2007:" MaxHeight="25" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="2"  Text="Имя БД СК-2007:" MaxHeight="25" HorizontalAlignment="Right"/>
+        </Grid>
     </Grid>
 </Window>

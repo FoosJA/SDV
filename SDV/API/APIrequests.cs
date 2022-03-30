@@ -17,18 +17,22 @@ namespace SDV.API
 
         private static string LuaScript = "\nlocal mvs = snapshot.GetObjects('MeasurementValue')\nlocal result = {mvCount = #mvs, mVals = {}}\nfor i=1,#mvs do\n  result.mVals[i] = \n    {\n      name = mvs[i].name, \n      uid = mvs[i].uid, \n      extId = mvs[i].externalId,\n    sourceId=mvs[i].sourceId,\n      POuid=mvs[i].ParentObject.uid,\n      POname = mvs[i].ParentObject.name,\n      MvType = mvs[i].MeasurementValueType.name}\n end\n\n\nout.AddRecord(result)";
 
-        public static List<OIck11> GetMeasAIP(TokenResponse tokenResponse, string serverName)
+        public static List<OIck11> GetMeasAIP(TokenResponse tokenResponse,int modelId, string serverName)
         {
             ServerName = serverName;
-            var result = GetObjectsWithClient(tokenResponse);
+            var result = GetObjectsWithClient(tokenResponse, modelId, serverName);
+            //var result = GetObjectsWithClient(tokenResponse, serverName);
             List<OIck11> mvList = result.Result.ToMVRT();
             return mvList;
         }
 
-        
-
-
-        private static async Task<Response6> GetObjectsWithClient(TokenResponse tokenResponse)
+        /// <summary>
+        /// Получение id актуальной модели
+        /// </summary>
+        /// <param name="tokenResponse"></param>
+        /// <param name="serverName"></param>
+        /// <returns></returns>
+        private static int GetActualModelId(TokenResponse tokenResponse, string serverName)
         {
             var httpHandler = new HttpClientHandler()
             {
@@ -36,14 +40,49 @@ namespace SDV.API
             };
             var httpClient = new HttpClient(httpHandler);
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", tokenResponse.AccessToken);
-            Client ck11Cli = new Client(httpClient) { ReadResponseAsString = true, BaseUrl = $"https://{ServerName}/api/public/object-models/v2.1" };
+            Client ck11Client = new Client(httpClient) { ReadResponseAsString = true, BaseUrl = $"https://{serverName}/api/public/object-models/v2.1" };
             Guid modelUid = new Guid("20000f1d-0000-0000-c000-0000006d746c");//TODO:Scada
-            var modelList = ck11Cli.GetVersionCollectionAsync(modelUid).Result;
+            var modelList = ck11Client.GetVersionCollectionAsync(modelUid).Result;            
+            var actualVersionId = modelList.Value.First(x => x.State == ModelVersionDescriptorState.Actual).VersionId;            
+            return actualVersionId;
+        }
+        /// <summary>
+        /// Чтение объектов в ИМ
+        /// </summary>
+        /// <param name="tokenResponse"></param>
+        /// <returns></returns>
+        private static async Task<Response6> GetObjectsWithClient(TokenResponse tokenResponse, int modelVersionId, string serverName)
+        {
+            var httpHandler = new HttpClientHandler()
+            {
+                UseDefaultCredentials = true,
+            };
+            var httpClient = new HttpClient(httpHandler);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", tokenResponse.AccessToken);
+            Client ck11Cli = new Client(httpClient) { ReadResponseAsString = true, BaseUrl = $"https://{serverName}/api/public/object-models/v2.1" };
+            Guid modelUid = new Guid("20000f1d-0000-0000-c000-0000006d746c");//TODO:Scada      
+            Body body = new Body();
+            body.LuaScript = LuaScript;
+            var result = ck11Cli.ExecuteScriptAsync(modelUid, modelVersionId, body).Result;
+            return result;
 
-            //var test2= modelList.Value.First(x => x.State == ModelVersionDescriptorState.Actual);
-            var actualVersionId = modelList.Value.First(x => x.State == ModelVersionDescriptorState.Actual).VersionId;
-            ModelVersion test = new ModelVersion();
-            //test.AdditionalProperties = version;
+        }
+        /// <summary>
+        /// Чтение объектов в ИМ
+        /// </summary>
+        /// <param name="tokenResponse"></param>
+        /// <returns></returns>
+        private static async Task<Response6> GetObjectsWithClient(TokenResponse tokenResponse, string serverName)
+        {
+            var httpHandler = new HttpClientHandler()
+            {
+                UseDefaultCredentials = true,
+            };
+            var httpClient = new HttpClient(httpHandler);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", tokenResponse.AccessToken);
+            Client ck11Cli = new Client(httpClient) { ReadResponseAsString = true, BaseUrl = $"https://{serverName}/api/public/object-models/v2.1" };
+            Guid modelUid = new Guid("20000f1d-0000-0000-c000-0000006d746c");//TODO:Scada
+            var actualVersionId = APIrequests.GetActualModelId(tokenResponse, serverName);           
             Body body = new Body();
             body.LuaScript = LuaScript;// "\nlocal mvs = snapshot.GetObjects('MeasurementValue')\nlocal result = {mvCount = #mvs, mVals = {}}\nfor i=1,#mvs do\n  result.mVals[i] = \n    {\n      name = mvs[i].name, \n      uid = mvs[i].uid, \n      extId = mvs[i].externalId,\n      ParObj=mvs[i].ParentObject.uid,\n      ParObjName = mvs[i].ParentObject.name,\n      MVT = mvs[i].MeasurementValueType.name}\n  if i >= 3 then break end\nend\n\nout.AddRecord(result)";
             var result = ck11Cli.ExecuteScriptAsync(modelUid, actualVersionId, body).Result;

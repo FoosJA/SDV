@@ -76,6 +76,7 @@
       <DependentUpon>ConnectWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Foundation\RelayCommand.cs" />
+    <Compile Include="Foundation\StoreDB.cs" />
     <Compile Include="UserControlSDV.xaml.cs">
       <DependentUpon>UserControlSDV.xaml</DependentUpon>
     </Compile>

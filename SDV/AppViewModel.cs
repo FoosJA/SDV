@@ -61,14 +61,17 @@ namespace SDV
         }
 
         public ICommand ConnectCommand { get { return new RelayCommand(ConnectExecute); } }
+
+
         public void ConnectExecute()
         {
             string oikServer = "app-web-test.odusv.so";// основной
-            int VersionId = 1;
+            int VersionId = 0;
             ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
 			try
 			{
                 connectWindow.ShowDialog();
+
                 oikServer = connectWindow.BaseUrl;
                 VersionId = connectWindow.OdbModelVersionId;
                 TokenRead = connectWindow.TokenRead;
@@ -78,8 +81,11 @@ namespace SDV
 			{
                 Log($"Ошибка: {ex.Message}");
             }
-
-            var test = APIrequests.GetMeasAIP(TokenRead, oikServer);
+			try
+			{
+                var test = APIrequests.GetMeasAIP(TokenRead, VersionId, oikServer);
+            }
+			catch {; }
 
 
 
