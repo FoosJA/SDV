@@ -44,6 +44,9 @@
     <Reference Include="Monitel.Mal.Context.CIM16">
       <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Monitel.Mal.Context.CIM16.dll</HintPath>
     </Reference>
+    <Reference Include="Monitel.PlatformInfrastructure">
+      <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Monitel.PlatformInfrastructure.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Newtonsoft.Json.dll</HintPath>
     </Reference>
