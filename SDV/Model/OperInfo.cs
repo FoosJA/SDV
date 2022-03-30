@@ -8,19 +8,45 @@ namespace SDV.Model
        
         public string Name { get; set; }
         public string Id { get; set; }
+        /// <summary>
+        /// какой-то тип
+        /// </summary>
         public string Type { get; set; }
-
+        /// <summary>
+        /// Значения измерений
+        /// </summary>
         public IEnumerable<MeasValue> MeasValueList { get; set; }
     }
 
     public class OIck11: OperInfo
     {
+        /// <summary>
+        /// UID измерения
+        /// </summary>
         public System.Guid UidMeas { get; set; }
+        /// <summary>
+        /// UID значения 
+        /// </summary>
         public System.Guid UidVal { get; set; }
+        /// <summary>
+        /// Класс значения 
+        /// </summary>
         public string Class { get; set; }
-        public string MeasValueType { get; set; }
+        /// <summary>
+        /// Тип значения
+        /// </summary>
         public string ValueType { get; set; }
+        /// <summary>
+        /// Тип измерения
+        /// </summary>
+        public string MeasType { get; set; }
+        /// <summary>
+        /// Источник значения
+        /// </summary>
         public string ValueSource { get; set; }
+        /// <summary>
+        /// Стратегия хранения
+        /// </summary>
         public string HISpartition { get; set; }
     }
     public class OIck07 : OperInfo

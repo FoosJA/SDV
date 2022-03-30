@@ -71,15 +71,38 @@ namespace SDV
                 connectWindow.ShowDialog();
                 BaseUrl = connectWindow.BaseUrl;
                 mImage = connectWindow.mImage;
-                //VersionId = connectWindow.OdbModelVersionId;
-                //TokenRead = connectWindow.TokenRead;
                 Log($"Подключение выполнено!");
             }
             catch(Exception ex)
 			{
                 Log($"Ошибка: {ex.Message}");
             }
-			
+            Oi11List.Clear();
+            MetaClass avClass = mImage.MetaData.Classes["AnalogValue"];
+            IEnumerable<AnalogValue> avCollect = mImage.GetObjects(avClass).Cast<AnalogValue>();
+            ObservableCollection<AnalogValue> avList = new ObservableCollection<AnalogValue>(avCollect);
+
+            foreach (AnalogValue av in avList)
+            {
+                OIck11 oi = new OIck11
+                {
+                    Name = av.name,
+                    UidMeas = av.Analog.Uid,
+                    UidVal = av.Uid,
+                    HISpartition=av.HISPartition.name,
+                    ValueSource=av.MeasurementValueSource.name,
+                    //TODO: Class
+                    MeasType=av.Analog.MeasurementType.name,
+                    ValueType=av.MeasurementValueType.name  
+                };                
+                if (av is ReplicatedAnalogValue avRep)                
+                    oi.Id = avRep.sourceId;
+                else
+                    oi.Id = av.externalId;
+                Oi11List.Add(oi);
+            }
+            Log($"Чтение ИМ выполнено!");
+
 
 
 
