@@ -3,7 +3,6 @@ using Monitel.Mal.Context.CIM16;
 using SDV.API;
 using SDV.Foundation;
 using SDV.Model;
-using SDV.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,7 +14,7 @@ using System.Windows.Input;
 namespace SDV
 {
     class AppViewModel : AppViewModelBase
-    {
+    {		
         APIrequests.TokenResponse TokenRead { get; set; }
         public List<OIck11> SelectedOi11List = new List<OIck11>();
 
@@ -33,38 +32,11 @@ namespace SDV
         }
         private ModelImage mImage;
         private string BaseUrl;
-        public AppViewModel()
-        {
-            OIck11 oi = new OIck11
-            {
-                Name = "1",
-                UidMeas = Guid.Empty,
-                UidVal = Guid.Empty               
-            };
-            Oi11List.Add(oi);
-            /*string BaseUrl = "app-web-test.odusv.so";//sv-app-web-wsfc.odusv.so
-            APIClient.TokenResponse tokenRead;
-            try
-            {
-                tokenRead = APIClient.GetToken(BaseUrl).Result;
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Ошибка подключения по web-ep ");
-            }
-            ObservableCollection<OIck11> oiList11 = new ObservableCollection<OIck11>();
-            foreach (var oi in oiList11)
-            {
-                APIClient.ToWrite(tokenRead, BaseUrl, oi);
-            }*/
-            Log("Запись выполнена!");
-        }
+        
 
         public ICommand ConnectCommand { get { return new RelayCommand(ConnectExecute); } }
-
-
         public void ConnectExecute()
-        {            
+        {     
             ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
 			try
 			{
@@ -80,7 +52,7 @@ namespace SDV
             Oi11List.Clear();
             MetaClass avClass = mImage.MetaData.Classes["AnalogValue"];
             IEnumerable<AnalogValue> avCollect = mImage.GetObjects(avClass).Cast<AnalogValue>();
-            ObservableCollection<AnalogValue> avList = new ObservableCollection<AnalogValue>(avCollect);
+            ObservableCollection<AnalogValue> avList = new ObservableCollection<AnalogValue>(avCollect.Where(x => x.HISPartition.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C")));
 
             foreach (AnalogValue av in avList)
             {

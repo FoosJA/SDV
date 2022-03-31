@@ -80,10 +80,6 @@
     </Compile>
     <Compile Include="Foundation\RelayCommand.cs" />
     <Compile Include="Foundation\StoreDB.cs" />
-    <Compile Include="UserControlSDV.xaml.cs">
-      <DependentUpon>UserControlSDV.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModel\HalfHourViewModel.cs" />
     <Page Include="ConnectWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -103,10 +99,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="UserControlSDV.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ViewModel\AppViewModelBase.cs" />

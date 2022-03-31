@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SDV"
+        xmlns:filter="clr-namespace:DataGridFilterLibrary;assembly=DataGridFilterLibrary"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         Title="ЛСА формирования СДВ. Фоос Ю.А." Height="450" Width="800"
@@ -21,7 +22,72 @@
         <Menu  VerticalAlignment="Center" Background="Transparent" Grid.Row="0">
             <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>
         </Menu>
-        <local:UserControlSDV x:Name="Control" Grid.Row="1" />
+        <!--<local:UserControlSDV x:Name="Control" Grid.Row="1" />-->
+        <TabControl Grid.Row="1">
+            <TabItem Header="СВ 30 минут (H)">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <DataGrid x:Name="otiGrid" ItemsSource="{Binding Path=Oi11List, UpdateSourceTrigger=PropertyChanged}"
+                              AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
+                              SelectionChanged="otiGrid_SelectionChanged"
+                              SelectedItem="{Binding Path=SelectedOi11,UpdateSourceTrigger=PropertyChanged}" 
+                              filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True" 
+                              filter:DataGridExtensions.IsClearButtonVisible="True"
+                              filter:DataGridExtensions.IsFilterVisible="{Binding Path=IsChecked, ElementName=ShowHideFilterCheckBox, Mode=TwoWay}"
+                              ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, ResourceId=DataGridHeaderFilterControlStyle}}"
+                              >
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#0078D4"/>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Path=Name }" Header="Имя"  Width="*" />
+                            <DataGridTextColumn Binding="{Binding Path=UidMeas }" Header="Uid"  Width="*" />
+                            <DataGridTextColumn Binding="{Binding Path=Id }" Header="id"  Width="*" />
+                            <DataGridTextColumn Binding="{Binding Path=MeasType }" Header="Тип измерения"  Width="*" />
+                            <DataGridTextColumn Binding="{Binding Path=ValueType }" Header="Тип значения"  Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1">
+                        <Label>Количество строк:</Label>
+                        <Label  Content="{Binding ElementName=otiGrid, Path=Items.Count, UpdateSourceTrigger=PropertyChanged}"></Label>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="СВ 1 час (W)">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="1"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" />
+                    <GroupBox Grid.Column="0" Header="W в ИМ (для записи архива)" Grid.RowSpan="2">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="30"/>
+                            </Grid.RowDefinitions>
+                            <DataGrid Margin="5" ></DataGrid>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Grid.Column="2" Header="Измерения в архив" Grid.RowSpan="2">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="30"/>
+                            </Grid.RowDefinitions>
+                            <DataGrid Margin="15" ></DataGrid>
+                        </Grid>
+                    </GroupBox>
+
+
+                </Grid>
+
+            </TabItem>
+        </TabControl>
         <GridSplitter Grid.Row="2"  Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
         <Grid Grid.Row="3" >
             <Border BorderBrush="Gray" BorderThickness="1" Background="WhiteSmoke" >

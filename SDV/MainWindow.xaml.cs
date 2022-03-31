@@ -43,12 +43,26 @@ namespace SDV
             }*/
            
         }
-
-     /*   private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void otiGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
-            connectWindow.ShowDialog();
-            ImModel = connectWindow.mImage;
-        }*/
+            /*if (ViewModel != null)
+            {
+                ViewModel.SelectedOi11List.Clear();
+                if (sender is DataGrid dg)
+                {
+                    foreach (object item in dg.SelectedItems)
+                    {
+                        ViewModel.SelectedOi11List.Add((OIck11)item);
+                    }
+                }
+            }*/
+        }
+
+        /*   private void MenuItem_Click(object sender, RoutedEventArgs e)
+           {
+               ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
+               connectWindow.ShowDialog();
+               ImModel = connectWindow.mImage;
+           }*/
     }
 }

@@ -9,7 +9,7 @@ using System.Windows.Data;
 
 namespace SDV.Model
 {
-    class AppViewModelBase
+    class AppViewModelBase : INotifyPropertyChanged
     {
         private int _currentProgress = 0;
         public int CurrentProgress
