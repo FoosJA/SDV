@@ -32,17 +32,19 @@ namespace SDV
         }
         private ModelImage mImage;
         private string BaseUrl;
-        
 
-        public ICommand ConnectCommand { get { return new RelayCommand(ConnectExecute); } }
+		#region Команды
+		public ICommand ConnectCommand { get { return new RelayCommand(ConnectExecute); } }
         public void ConnectExecute()
-        {     
+        {
+            StoreDB dB=new StoreDB();
             ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
 			try
 			{
                 connectWindow.ShowDialog();
                 BaseUrl = connectWindow.BaseUrl;
                 mImage = connectWindow.mImage;
+                dB = connectWindow.DataBase;
                 Log($"Подключение выполнено!");
             }
             catch(Exception ex)
@@ -52,9 +54,9 @@ namespace SDV
             Oi11List.Clear();
             MetaClass avClass = mImage.MetaData.Classes["AnalogValue"];
             IEnumerable<AnalogValue> avCollect = mImage.GetObjects(avClass).Cast<AnalogValue>();
-            ObservableCollection<AnalogValue> avList = new ObservableCollection<AnalogValue>(avCollect.Where(x => x.HISPartition.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C")));
-
-            foreach (AnalogValue av in avList)
+           
+            ObservableCollection<AnalogValue> hAvList = new ObservableCollection<AnalogValue>(avCollect.Where(x => x.HISPartition.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C")));                       
+            foreach (AnalogValue av in hAvList)
             {
                 OIck11 oi = new OIck11
                 {
@@ -70,69 +72,49 @@ namespace SDV
                 if (av is ReplicatedAnalogValue avRep)                
                     oi.Id = avRep.sourceId;
                 else
-                    oi.Id = av.externalId;
+				{
+                    oi.Id = av.externalId.Replace("Calc", "").Replace("Agr", "").Replace("RB", ""); 
+                }                    
+                Oi11List.Add(oi);
+            }
+
+            ObservableCollection<AnalogValue> wAvList = new ObservableCollection<AnalogValue>(avCollect.Where(x => x.HISPartition.Uid == new Guid("1000007D-0000-0000-C000-0000006D746C")));
+            foreach (AnalogValue av in wAvList)
+            {
+                OIck11 oi = new OIck11
+                {
+                    Name = av.name,
+                    UidMeas = av.Analog.Uid,
+                    UidVal = av.Uid,
+                    HISpartition = av.HISPartition.name,
+                    ValueSource = av.MeasurementValueSource.name,
+                    //TODO: Class
+                    MeasType = av.Analog.MeasurementType.name,
+                    ValueType = av.MeasurementValueType.name
+                };
+                if (av is ReplicatedAnalogValue avRep)
+                    oi.Id = avRep.sourceId;
+                else if (av.externalId != null)
+				{
+                    oi.Id = av.externalId.Replace("Calc", "").Replace("Agr", "").Replace("RB", "");
+                }                    
                 Oi11List.Add(oi);
             }
             Log($"Чтение ИМ выполнено!");
+            if(dB != null)
+			{
+                var test = dB.GetAllOI();
+            }
+            
 
 
 
-
-
-            //OIck11 oi = new OIck11
-            //{
-            //    Name = "2",
-            //    UidMeas = Guid.Empty,
-            //    UidVal = Guid.Empty
-            //};
-            //Oi11List.Add(oi);
-            // 
-            /*ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
-            connectWindow.ShowDialog();
-
-            if (connectWindow.isClose)
-            {
-                if (connectWindow.ConnectSuccess)
-                {
-                    Log("Подключение к СК-11 выполнено!");
-                    BaseUrl = connectWindow.BaseUrl;
-                    mImage = connectWindow.mImage;
-                    Oi11List.Clear();
-                    MetaClass avClass = mImage.MetaData.Classes["AnalogValue"];
-                    IEnumerable<AnalogValue> avCollect = mImage.GetObjects(avClass).Cast<AnalogValue>();
-                    foreach (var av in avCollect)
-                    {
-                        string externalId;
-                        if (av is ReplicatedAnalogValue rav)
-                            externalId = rav.sourceId;
-                        else 
-                            externalId = av.externalId;
-                        if (externalId!= String.Empty && externalId!= null)
-                        {
-                            OIck11 oi = new OIck11
-                            {
-                                Name = av.name,
-                                UidMeas = av.Uid,
-                                UidVal = av.Analog.Uid,
-                                MeasValueType = av.MeasurementValueType.name,
-                                Class = mImage.MetaData.Classes.First(x => x.Id == av.ClassId).DisplayName,
-                                Type = externalId.Substring(0, 1),
-                                Id = externalId.Substring(1),
-                                ValueType = av.Analog.MeasurementType.name
-                            };
-                            Oi11List.Add(oi);
-                        }
-                            
-
-                    }
-                    Log("Чтение ИМ выполнено!");
-                }
-                else
-                {
-                    Log("Ошибка подключения к СК-11");
-                    Log(connectWindow.exeption.Message);
-                }
-            }*/
+          
         }
+		#endregion
+		#region Стандартные команды
+		public ICommand ClearInfoCollect { get { return new RelayCommand(ClearInfoExecute); } }
+        private void ClearInfoExecute() { InfoCollect.Clear(); }
+        #endregion
     }
 }

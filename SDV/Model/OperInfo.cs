@@ -3,22 +3,22 @@ using System.Collections.Generic;
 
 namespace SDV.Model
 {
-    public class OperInfo
+    public class IOperInfo
     {
        
         public string Name { get; set; }
         public string Id { get; set; }
-        /// <summary>
-        /// какой-то тип
-        /// </summary>
-        public string Type { get; set; }
+        ///// <summary>
+        ///// какой-то тип
+        ///// </summary>
+        //public string Type { get; set; }
         /// <summary>
         /// Значения измерений
         /// </summary>
         public IEnumerable<MeasValue> MeasValueList { get; set; }
     }
 
-    public class OIck11: OperInfo
+    public class OIck11: IOperInfo
     {
         /// <summary>
         /// UID измерения
@@ -49,7 +49,7 @@ namespace SDV.Model
         /// </summary>
         public string HISpartition { get; set; }
     }
-    public class OIck07 : OperInfo
+    public class OIck07 : IOperInfo
     {
         public string Category { get; set; }
 
