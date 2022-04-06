@@ -14,7 +14,7 @@ namespace SDV.Foundation
         public string serverName;
         public string dbName;
         #region Запросы sql
-        public const string HQuery =
+        public const string SDVQuery =
              @"
 SELECT DefDRParam.ID as [ID]
 ,'H' as [Тип ОИ]
@@ -24,10 +24,8 @@ SELECT DefDRParam.ID as [ID]
 FROM   DefDRParam INNER JOIN  EnObj ON DefDRParam.EObject = EnObj.ID
 inner join  ParTypes p on DefDRParam.Type=p.ID 
 inner join  FillType f2 on DefDRParam.Fill2=f2.ID 
-order by  [ID]
-            ";
-        public const string WQuery =
-            @"
+
+union
 SELECT DefDRParam.ID as [ID]
 ,'W' as [Тип ОИ]
 ,DefDRParam.name as [Наименование ОИ]
@@ -37,7 +35,9 @@ FROM   DefDRParam INNER JOIN  EnObj ON DefDRParam.EObject = EnObj.ID
 inner join  ParTypes p on DefDRParam.Type=p.ID 
 inner join  FillType f on DefDRParam.Fill=f.ID 
 order by  [ID]
+
             ";
+       
         public const string FormulasQuery =
             @"
 select Formulas.OI as [Тип результата],Formulas.Result as [id результата],
@@ -77,7 +77,7 @@ SELECT  [ID]
 
         public ObservableCollection<OIck07> GetAllOI()
         {
-            var query = HQuery;
+            var query = SDVQuery;
             var strBuilder = new SqlConnectionStringBuilder()
             {
                 DataSource = serverName,

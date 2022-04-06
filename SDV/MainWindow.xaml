@@ -43,12 +43,19 @@
                             <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#0078D4"/>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Path=Name }" Header="Имя"  Width="*" />
-                            <DataGridTextColumn Binding="{Binding Path=UidMeas }" Header="Uid"  Width="*" />
-                            <DataGridTextColumn Binding="{Binding Path=Id }" Header="id"  Width="*" />
-                            <DataGridTextColumn Binding="{Binding Path=MeasType }" Header="Тип измерения"  Width="*" />
-                            <DataGridTextColumn Binding="{Binding Path=ValueType }" Header="Тип значения"  Width="*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.Name}" Header="ОИ"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.UidMeas}" Header="UID ОИ"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck07.Id}" Header="Id"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.MeasType}" Header="Тип значения"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.ValueType}" Header="Тип измерения"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck07.Category}" Header="Категория в СК7"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.Class}" Header="Класс ОИ"  Width="0.5*" />
                         </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Копировать Uid" Command="{Binding CopyCommand}"></MenuItem>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                     </DataGrid>
                     <StackPanel Orientation="Horizontal" Grid.Row="1">
                         <Label>Количество строк:</Label>

@@ -35,27 +35,31 @@ namespace SDV
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-           /* _isInitialized = true;
+            _isInitialized = true;
             var viewModel = (this.DataContext as AppViewModel);
             if (viewModel != null)
             {
                 viewModel.ConnectExecute();
-            }*/
+            }
            
         }
         private void otiGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            /*if (ViewModel != null)
+            if (_isInitialized)
             {
-                ViewModel.SelectedOi11List.Clear();
-                if (sender is DataGrid dg)
+                var viewModel = (this.DataContext as AppViewModel);
+                if (viewModel != null)
                 {
-                    foreach (object item in dg.SelectedItems)
+                    viewModel.SelectedOi11List.Clear();
+                    if (sender is DataGrid dg)
                     {
-                        ViewModel.SelectedOi11List.Add((OIck11)item);
+                        foreach (object item in dg.SelectedItems)
+                        {
+                            viewModel.SelectedOi11List.Add((TwoMeas)item);
+                        }
                     }
-                }
-            }*/
+                }                
+            }
         }
 
         /*   private void MenuItem_Click(object sender, RoutedEventArgs e)
