@@ -38,6 +38,10 @@
     <Reference Include="DataGridFilterLibrary">
       <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\DataGridFilterLibrary.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=6.0.0.1, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Microsoft.Extensions.Caching.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="Monitel.Mal">
       <HintPath>..\..\..\Program Files\Monitel\CK-11\Client\Monitel.Mal.dll</HintPath>
     </Reference>
@@ -78,6 +82,7 @@
     <Compile Include="ConnectWindow.xaml.cs">
       <DependentUpon>ConnectWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Foundation\Function.cs" />
     <Compile Include="Foundation\RelayCommand.cs" />
     <Compile Include="Foundation\StoreDB.cs" />
     <Page Include="ConnectWindow.xaml">
@@ -101,6 +106,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Formulas.cs" />
+    <Compile Include="Model\Operand.cs" />
     <Compile Include="ViewModel\AppViewModelBase.cs" />
     <Compile Include="Model\OperInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">

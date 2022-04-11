@@ -50,12 +50,12 @@ namespace SDV
                 var viewModel = (this.DataContext as AppViewModel);
                 if (viewModel != null)
                 {
-                    viewModel.SelectedOi11List.Clear();
+                    viewModel.SelectedHList.Clear();
                     if (sender is DataGrid dg)
                     {
                         foreach (object item in dg.SelectedItems)
                         {
-                            viewModel.SelectedOi11List.Add((TwoMeas)item);
+                            viewModel.SelectedHList.Add((HalfHourMeas)item);
                         }
                     }
                 }                

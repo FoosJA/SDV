@@ -9,10 +9,11 @@
         Loaded="Window_Loaded"
         Title="ЛСА формирования СДВ. Фоос Ю.А." Height="450" Width="800"
         x:Name="myWindow"
-        >   
-    
+        >
+
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
             <RowDefinition Height="30"/>
             <RowDefinition/>
             <RowDefinition Height="3"/>
@@ -20,20 +21,24 @@
             <RowDefinition Height="15"/>
         </Grid.RowDefinitions>
         <Menu  VerticalAlignment="Center" Background="Transparent" Grid.Row="0">
-            <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>
+            <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>            
         </Menu>
+        <ToolBar Grid.Row="1" VerticalAlignment="Center" Background="AliceBlue">
+            <Button Content=" 1. Создать W " Command="{Binding CreateCommand}"/>
+            <Separator/>
+        </ToolBar>
         <!--<local:UserControlSDV x:Name="Control" Grid.Row="1" />-->
-        <TabControl Grid.Row="1">
+        <TabControl Grid.Row="2"  SelectedIndex="{Binding SelectItem}">
             <TabItem Header="СВ 30 минут (H)">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
-                    <DataGrid x:Name="otiGrid" ItemsSource="{Binding Path=Oi11List, UpdateSourceTrigger=PropertyChanged}"
+                    <DataGrid x:Name="otiGrid" ItemsSource="{Binding Path=OiHList, UpdateSourceTrigger=PropertyChanged}"
                               AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended"
                               SelectionChanged="otiGrid_SelectionChanged"
-                              SelectedItem="{Binding Path=SelectedOi11,UpdateSourceTrigger=PropertyChanged}" 
+                              SelectedItem="{Binding Path=SelectedH,UpdateSourceTrigger=PropertyChanged}" 
                               filter:DataGridExtensions.UseBackgroundWorkerForFiltering="True" 
                               filter:DataGridExtensions.IsClearButtonVisible="True"
                               filter:DataGridExtensions.IsFilterVisible="{Binding Path=IsChecked, ElementName=ShowHideFilterCheckBox, Mode=TwoWay}"
@@ -44,11 +49,12 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Path=OIck11.Name}" Header="ОИ"  Width="0.5*" />
-                            <DataGridTextColumn Binding="{Binding Path=OIck11.UidMeas}" Header="UID ОИ"  Width="0.5*" />
-                            <DataGridTextColumn Binding="{Binding Path=OIck07.Id}" Header="Id"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.UidVal}" Header="UID ОИ"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.Id}" Header="Id"  Width="0.5*" />
                             <DataGridTextColumn Binding="{Binding Path=OIck11.MeasType}" Header="Тип значения"  Width="0.5*" />
                             <DataGridTextColumn Binding="{Binding Path=OIck11.ValueType}" Header="Тип измерения"  Width="0.5*" />
-                            <DataGridTextColumn Binding="{Binding Path=OIck07.Category}" Header="Категория в СК7"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck07.CategoryH}" Header="Категория H в СК7"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck07.CategoryW}" Header="Категория W в СК7"  Width="0.5*" />
                             <DataGridTextColumn Binding="{Binding Path=OIck11.Class}" Header="Класс ОИ"  Width="0.5*" />
                         </DataGrid.Columns>
                         <DataGrid.ContextMenu>
@@ -77,7 +83,15 @@
                                 <RowDefinition/>
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
-                            <DataGrid Margin="5" ></DataGrid>
+                            <DataGrid Margin="5" ItemsSource="{Binding Path=SdvList, UpdateSourceTrigger=PropertyChanged}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding Path=H.Id}" Header="Id H"  Width="0.5*" />
+                                    <DataGridTextColumn Binding="{Binding Path=H.UidMeas}" Header="UID H"  Width="0.5*" />
+                                    <DataGridTextColumn Binding="{Binding Path=W.Id}" Header="Id W"  Width="0.5*" />
+                                    <DataGridTextColumn Binding="{Binding Path=W.UidMeas}" Header="UID W"  Width="0.5*" />
+                                </DataGrid.Columns>
+
+                            </DataGrid>
                         </Grid>
                     </GroupBox>
                     <GroupBox Grid.Column="2" Header="Измерения в архив" Grid.RowSpan="2">
@@ -95,13 +109,13 @@
 
             </TabItem>
         </TabControl>
-        <GridSplitter Grid.Row="2"  Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-        <Grid Grid.Row="3" >
+        <GridSplitter Grid.Row="3"  Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <Grid Grid.Row="4" >
             <Border BorderBrush="Gray" BorderThickness="1" Background="WhiteSmoke" >
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="5" Background="White">
                         <TextBlock  Background="WhiteSmoke" Text="Протокол" Foreground="DimGray" FontWeight="Bold"/>
-                        <ListBox  BorderThickness="0" ItemsSource="{Binding Path=InfoCollect,UpdateSourceTrigger=PropertyChanged }">
+                        <ListBox  BorderThickness="0" ItemsSource="{Binding Path=InfoCollect,UpdateSourceTrigger=PropertyChanged }" IsSynchronizedWithCurrentItem="True">                          
                             <ListBox.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Очистить" Command="{Binding ClearInfoCollect}"/>
@@ -112,6 +126,6 @@
                 </ScrollViewer>
             </Border>
         </Grid>
-        <ProgressBar Grid.Row="4" Value="{Binding CurrentProgress}" Maximum="{Binding ProgressMax}" />
+        <ProgressBar Grid.Row="5" Value="{Binding CurrentProgress}" Maximum="{Binding ProgressMax}" />
     </Grid>
 </Window>

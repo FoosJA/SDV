@@ -28,7 +28,7 @@ namespace SDV.Foundation
             ServerName = serverName;
             try
             {
-                WriteValuesWithClient(tokenResponse, MeasurementValueType.Numeric, oi.MeasValueList, oi.UidMeas);
+                WriteValuesWithClient(tokenResponse, MeasurementValueTypeAPI.Numeric, oi.MeasValueList, oi.UidMeas);
                 return true;
             }
             catch
@@ -43,7 +43,7 @@ namespace SDV.Foundation
         /// <param name="type"></param>
         /// <param name="oiList"></param>
         /// <param name="uidOi"></param>
-        private static async void WriteValuesWithClient(TokenResponse tokenResponse, MeasurementValueType type, IEnumerable<MeasValue> oiList, Guid uidOi)
+        private static async void WriteValuesWithClient(TokenResponse tokenResponse, MeasurementValueTypeAPI type, IEnumerable<MeasValue> oiList, Guid uidOi)
         {
             var httpHandler = new HttpClientHandler()
             {

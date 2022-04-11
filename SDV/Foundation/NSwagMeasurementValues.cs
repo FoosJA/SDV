@@ -395,7 +395,7 @@ namespace SDV.Foundation
         /// <param name="uid">UID значения измерения.</param>
         /// <returns>Возвращается значение измерения. Если измерение не найдено или у него отсутствует значение, возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response8> ActualAsync(MeasurementValueType valueType, System.Guid uid)
+        public System.Threading.Tasks.Task<Response8> ActualAsync(MeasurementValueTypeAPI valueType, System.Guid uid)
         {
             return ActualAsync(valueType, uid, System.Threading.CancellationToken.None);
         }
@@ -405,7 +405,7 @@ namespace SDV.Foundation
         /// <param name="uid">UID значения измерения.</param>
         /// <returns>Возвращается значение измерения. Если измерение не найдено или у него отсутствует значение, возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response8> ActualAsync(MeasurementValueType valueType, System.Guid uid, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response8> ActualAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -508,7 +508,7 @@ namespace SDV.Foundation
         /// <param name="timeStamp">Метка времени, на которую требуется получить значение измерения, удовлетворяющего остальным критериям запроса.</param>
         /// <returns>Возвращается значение измерения. Если измерение не найдено или у него отсутствует значение, возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response9> MeasurementValuesAsync(MeasurementValueType valueType, System.Guid uid, System.DateTimeOffset timeStamp)
+        public System.Threading.Tasks.Task<Response9> MeasurementValuesAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.DateTimeOffset timeStamp)
         {
             return MeasurementValuesAsync(valueType, uid, timeStamp, System.Threading.CancellationToken.None);
         }
@@ -519,7 +519,7 @@ namespace SDV.Foundation
         /// <param name="timeStamp">Метка времени, на которую требуется получить значение измерения, удовлетворяющего остальным критериям запроса.</param>
         /// <returns>Возвращается значение измерения. Если измерение не найдено или у него отсутствует значение, возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response9> MeasurementValuesAsync(MeasurementValueType valueType, System.Guid uid, System.DateTimeOffset timeStamp, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response9> MeasurementValuesAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.DateTimeOffset timeStamp, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -627,7 +627,7 @@ namespace SDV.Foundation
         /// <param name="toTimeStamp">Правая включающая граница интервала</param>
         /// <returns>Возвращаются значения измерения. Если измерение не найдено или у него отсутствует значение, возвращается пустой массив.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response10> IntervalAsync(MeasurementValueType valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp)
+        public System.Threading.Tasks.Task<Response10> IntervalAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp)
         {
             return IntervalAsync(valueType, uid, fromTimeStamp, toTimeStamp, System.Threading.CancellationToken.None);
         }
@@ -639,7 +639,7 @@ namespace SDV.Foundation
         /// <param name="toTimeStamp">Правая включающая граница интервала</param>
         /// <returns>Возвращаются значения измерения. Если измерение не найдено или у него отсутствует значение, возвращается пустой массив.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response10> IntervalAsync(MeasurementValueType valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response10> IntervalAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -754,7 +754,7 @@ namespace SDV.Foundation
         /// <param name="stepValue">Значение интервала между моментами времени в столбцах.</param>
         /// <returns>Возвращается строка таблицы значений измерений. Если измерение не найдено или у него отсутствует какое-то значение,  то в соответствующих ячейках возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<MeasurementValueTableRow> TableAsync(MeasurementValueType valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp, StepUnits stepUnits, int stepValue)
+        public System.Threading.Tasks.Task<MeasurementValueTableRow> TableAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp, StepUnits stepUnits, int stepValue)
         {
             return TableAsync(valueType, uid, fromTimeStamp, toTimeStamp, stepUnits, stepValue, System.Threading.CancellationToken.None);
         }
@@ -768,7 +768,7 @@ namespace SDV.Foundation
         /// <param name="stepValue">Значение интервала между моментами времени в столбцах.</param>
         /// <returns>Возвращается строка таблицы значений измерений. Если измерение не найдено или у него отсутствует какое-то значение,  то в соответствующих ячейках возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<MeasurementValueTableRow> TableAsync(MeasurementValueType valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp, StepUnits stepUnits, int stepValue, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<MeasurementValueTableRow> TableAsync(MeasurementValueTypeAPI valueType, System.Guid uid, System.DateTimeOffset fromTimeStamp, System.DateTimeOffset toTimeStamp, StepUnits stepUnits, int stepValue, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -897,7 +897,7 @@ namespace SDV.Foundation
         /// <param name="body">Параметры запроса измерений.</param>
         /// <returns>Возвращаются значения измерений на момент времени. Если измерение не найдено или у него отсутствует значение, возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response11> QueryAsync(MeasurementValueType valueType, Body2 body)
+        public System.Threading.Tasks.Task<Response11> QueryAsync(MeasurementValueTypeAPI valueType, Body2 body)
         {
             return QueryAsync(valueType, body, System.Threading.CancellationToken.None);
         }
@@ -907,7 +907,7 @@ namespace SDV.Foundation
         /// <param name="body">Параметры запроса измерений.</param>
         /// <returns>Возвращаются значения измерений на момент времени. Если измерение не найдено или у него отсутствует значение, возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response11> QueryAsync(MeasurementValueType valueType, Body2 body, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response11> QueryAsync(MeasurementValueTypeAPI valueType, Body2 body, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -1021,7 +1021,7 @@ namespace SDV.Foundation
         /// <param name="body">Параметры запроса таблицы измерений.</param>
         /// <returns>Возвращается таблица значений измерений. Если измерение не найдено или у него отсутствует какое-то значение,  то в соответствующих ячейках возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response12> Query2Async(MeasurementValueType valueType, Body3 body)
+        public System.Threading.Tasks.Task<Response12> Query2Async(MeasurementValueTypeAPI valueType, Body3 body)
         {
             return Query2Async(valueType, body, System.Threading.CancellationToken.None);
         }
@@ -1031,7 +1031,7 @@ namespace SDV.Foundation
         /// <param name="body">Параметры запроса таблицы измерений.</param>
         /// <returns>Возвращается таблица значений измерений. Если измерение не найдено или у него отсутствует какое-то значение,  то в соответствующих ячейках возвращается значение с нулевым кодом качества.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response12> Query2Async(MeasurementValueType valueType, Body3 body, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response12> Query2Async(MeasurementValueTypeAPI valueType, Body3 body, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -1145,7 +1145,7 @@ namespace SDV.Foundation
         /// <param name="body">Запрос на запись значений.</param>
         /// <returns>Запрос на запись значений был успешно обработан, но запись некоторых значений могла закончиться неуспешно.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response13> WriteAsync(MeasurementValueType valueType, Body4 body)
+        public System.Threading.Tasks.Task<Response13> WriteAsync(MeasurementValueTypeAPI valueType, Body4 body)
         {
             return WriteAsync(valueType, body, System.Threading.CancellationToken.None);
         }
@@ -1155,7 +1155,7 @@ namespace SDV.Foundation
         /// <param name="body">Запрос на запись значений.</param>
         /// <returns>Запрос на запись значений был успешно обработан, но запись некоторых значений могла закончиться неуспешно.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response13> WriteAsync(MeasurementValueType valueType, Body4 body, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response13> WriteAsync(MeasurementValueTypeAPI valueType, Body4 body, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -1274,7 +1274,7 @@ namespace SDV.Foundation
         /// <param name="body">Запрос на удаление значений.</param>
         /// <returns>Запрос на удаление значений был успешно обработан, но запись некоторых значений могла закончиться неуспешно.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<Response14> DeleteAsync(MeasurementValueType valueType, Body5 body)
+        public System.Threading.Tasks.Task<Response14> DeleteAsync(MeasurementValueTypeAPI valueType, Body5 body)
         {
             return DeleteAsync(valueType, body, System.Threading.CancellationToken.None);
         }
@@ -1284,7 +1284,7 @@ namespace SDV.Foundation
         /// <param name="body">Запрос на удаление значений.</param>
         /// <returns>Запрос на удаление значений был успешно обработан, но запись некоторых значений могла закончиться неуспешно.</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<Response14> DeleteAsync(MeasurementValueType valueType, Body5 body, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<Response14> DeleteAsync(MeasurementValueTypeAPI valueType, Body5 body, System.Threading.CancellationToken cancellationToken)
         {
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
@@ -1837,7 +1837,7 @@ namespace SDV.Foundation
     ///   - string — строковый тип
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v11.0.0.0)")]
-    public enum MeasurementValueType
+    public enum MeasurementValueTypeAPI
     {
         [System.Runtime.Serialization.EnumMember(Value = @"numeric")]
         Numeric = 0,
@@ -1848,7 +1848,7 @@ namespace SDV.Foundation
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v11.0.0.0)")]
-    public partial class MeasurementValue
+    public partial class MeasurementValueAPI
     {
         [Newtonsoft.Json.JsonProperty("uid", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
@@ -1882,9 +1882,9 @@ namespace SDV.Foundation
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
         }
 
-        public static MeasurementValue FromJson(string data)
+        public static MeasurementValueAPI FromJson(string data)
         {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<MeasurementValue>(data, new Newtonsoft.Json.JsonSerializerSettings());
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<MeasurementValueAPI>(data, new Newtonsoft.Json.JsonSerializerSettings());
         }
 
     }
@@ -1898,7 +1898,7 @@ namespace SDV.Foundation
 
         [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<MeasurementValue> Value { get; set; } = new System.Collections.ObjectModel.Collection<MeasurementValue>();
+        public System.Collections.Generic.ICollection<MeasurementValueAPI> Value { get; set; } = new System.Collections.ObjectModel.Collection<MeasurementValueAPI>();
 
         private System.Collections.Generic.IDictionary<string, object> _additionalProperties = new System.Collections.Generic.Dictionary<string, object>();
 
@@ -2491,7 +2491,7 @@ namespace SDV.Foundation
     public partial class Response8
     {
         [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public MeasurementValue Value { get; set; }
+        public MeasurementValueAPI Value { get; set; }
 
         private System.Collections.Generic.IDictionary<string, object> _additionalProperties = new System.Collections.Generic.Dictionary<string, object>();
 
@@ -2518,7 +2518,7 @@ namespace SDV.Foundation
     public partial class Response9
     {
         [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public MeasurementValue Value { get; set; }
+        public MeasurementValueAPI Value { get; set; }
 
         private System.Collections.Generic.IDictionary<string, object> _additionalProperties = new System.Collections.Generic.Dictionary<string, object>();
 
@@ -2549,7 +2549,7 @@ namespace SDV.Foundation
 
         [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.Always)]
         [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<MeasurementValue> Value { get; set; } = new System.Collections.ObjectModel.Collection<MeasurementValue>();
+        public System.Collections.Generic.ICollection<MeasurementValueAPI> Value { get; set; } = new System.Collections.ObjectModel.Collection<MeasurementValueAPI>();
 
         private System.Collections.Generic.IDictionary<string, object> _additionalProperties = new System.Collections.Generic.Dictionary<string, object>();
 
@@ -2576,7 +2576,7 @@ namespace SDV.Foundation
     public partial class Response11
     {
         [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.ICollection<MeasurementValue> Value { get; set; }
+        public System.Collections.Generic.ICollection<MeasurementValueAPI> Value { get; set; }
 
         private System.Collections.Generic.IDictionary<string, object> _additionalProperties = new System.Collections.Generic.Dictionary<string, object>();
 

@@ -51,7 +51,8 @@ namespace SDV.Model
     }
     public class OIck07 : IOperInfo
     {
-        public string Category { get; set; }
+        public string CategoryH { get; set; }
+        public string CategoryW { get; set; }
 
     }
 
