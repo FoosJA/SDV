@@ -22,32 +22,36 @@ namespace SDV.Foundation
 			CreateRepVal = createRepVal;
 
 		}
-
-		public OIck11 CreateRBvalue(AnalogValue av)
+		/// <summary>
+		/// Создание RB значения
+		/// </summary>
+		/// <param name="oi"></param>
+		/// <returns></returns>
+		public OIck11 CreateRBvalue(OIck11 oi)
 		{
+			AnalogValue av = (AnalogValue)ModelImage.GetObject(oi.UidVal);
+			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
+			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
+			MeasurementValueSource mvSource = (MeasurementValueSource)ModelImage.GetObject(new Guid("10000C28-0000-0000-C000-0000006D746C"));//Удаленный ЦУ	
 			try
 			{
-				MeasurementValueSource mvSource = (MeasurementValueSource)ModelImage.GetObject(new Guid("10000C28-0000-0000-C000-0000006D746C"));//Удаленный ЦУ	
-				HISPartition avTwoTime = (HISPartition)ModelImage.GetObject(new Guid("10000064-0000-0000-C000-0000006D746C"));//аналоговые 2 времени
 				ModelImage.BeginTransaction();
 				var rapidBusVal = (RapidBusIndirectAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["RapidBusIndirectAnalogValue"]);
-				rapidBusVal.name = av.Analog.name + " [RB]";
-				rapidBusVal.Analog = av.Analog;
-				if (av is ReplicatedAnalogValue rav)
-					rapidBusVal.externalId = "RB" + rav.sourceId;
-				else
-					rapidBusVal.externalId = "RB" + av.externalId;
+				rapidBusVal.name = mvt.name + " [RB]";
+				rapidBusVal.externalId = "RB" + oi.Id.Replace('H', 'W');
 				rapidBusVal.ParentObject = av.ParentObject;
+				rapidBusVal.Analog = av.Analog;
 				rapidBusVal.hisPreserveTime = true;
-				rapidBusVal.HISPartition = av.HISPartition;
+				rapidBusVal.HISPartition = hISPartition;
 				rapidBusVal.MeasurementValueSource = mvSource;
-				rapidBusVal.MeasurementValueType = av.MeasurementValueType;
+				rapidBusVal.MeasurementValueType = mvt;
 				ModelImage.CommitTransaction();
 				OIck11 oiRes = new OIck11
 				{
 					Name = rapidBusVal.name,
 					UidMeas = rapidBusVal.Analog.Uid,
 					UidVal = rapidBusVal.Uid,
+					Id = oi.Id.Replace('H', 'W'),
 					HISpartition = rapidBusVal.HISPartition.name,
 					ValueSource = rapidBusVal.MeasurementValueSource.name,
 					Class = "RapidBusIndirectAnalogValue",
@@ -62,6 +66,15 @@ namespace SDV.Foundation
 				throw new ArgumentException("Не удалось создать RB значение. " + ex.Message);
 			}
 		}
+		/// <summary>
+		/// Создание вычисляемого значения
+		/// </summary>
+		/// <param name="oi11"></param>
+		/// <param name="cv"></param>
+		/// <param name="operands"></param>
+		/// <param name="allFormulas"></param>
+		/// <param name="allOperands"></param>
+		/// <returns></returns>
 		public OIck11 CreateCalcvalue(OIck11 oi11, Formulas cv, List<OperandFrm> operands, IEnumerable<Formulas> allFormulas, IEnumerable<OperandFrm> allOperands)
 		{
 			List<(MeasurementValue, string)> operandList = new List<(MeasurementValue, string)>();
@@ -154,7 +167,7 @@ namespace SDV.Foundation
 			List<string> operandFrmList = new List<string>();
 			AnalogValue hCk11 = (AnalogValue)ModelImage.GetObject(oi11.UidVal);
 			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
-			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));
+			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
 
 			MetaClass MVSClass = ModelImage.MetaData.Classes["MeasurementValueSource"];
 			IEnumerable<MeasurementValueSource> mvsCollect = ModelImage.GetObjects(MVSClass).Cast<MeasurementValueSource>();
@@ -166,7 +179,7 @@ namespace SDV.Foundation
 
 				cavNew = (CalculatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["CalculatedAnalogValue"]);
 				cavNew.MeasurementValueType = mvt;
-				cavNew.name = "CalcW_" + hCk11.name;
+				cavNew.name = mvt.name + " [Calc]";
 				cavNew.InterpolationParams = hCk11.InterpolationParams;
 				cavNew.schedule = CalculationSchedule.byChange;
 				cavNew.ParentObject = hCk11.Analog;
@@ -228,6 +241,7 @@ namespace SDV.Foundation
 					Name = cavNew.name,
 					UidMeas = cavNew.Analog.Uid,
 					UidVal = cavNew.Uid,
+					Id = oi11.Id.Replace('H', 'W'),
 					HISpartition = cavNew.HISPartition.name,
 					ValueSource = cavNew.MeasurementValueSource.name,
 					Class = "CalculatedAnalogValue",
@@ -236,14 +250,13 @@ namespace SDV.Foundation
 				};
 				return oiRes;
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
-				{
-					ModelImage.RollbackTransaction();
-					throw new ArgumentException("Не удалось создать вычисляемое значение. " + ex.Message);
-				}
+				ModelImage.RollbackTransaction();
+				throw new ArgumentException("Не удалось создать вычисляемое значение. " + ex.Message);
+
 			}
-			
+
 		}
 
 		/// <summary>
@@ -316,5 +329,241 @@ namespace SDV.Foundation
 
 		}
 
+		/// <summary>
+		/// Создание агрегируемого значения
+		/// </summary>
+		/// <param name="oi11"></param>
+		/// <param name="IntegParamCollect"></param>
+		/// <returns></returns>
+		public OIck11 CreateAgregateValue(OIck11 oi11, List<IntegParam> IntegParamCollect)
+		{
+			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
+			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
+			var agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == oi11.Id);
+			var idAgrerSource = agregVal.CategorySource + agregVal.IdSource;
+
+
+			MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
+			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
+			var sourceAgreg = mvCollect.FirstOrDefault(x => x.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "") == idAgrerSource);
+			if (sourceAgreg == null)
+			{
+				if (agregVal.CategorySource == "S")
+				{
+					MetaClass rdvClass = ModelImage.MetaData.Classes["ReplicatedDiscreteValue"];
+					IEnumerable<ReplicatedDiscreteValue> rdvCollect = ModelImage.GetObjects(rdvClass).Cast<ReplicatedDiscreteValue>();
+					sourceAgreg = rdvCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
+				}
+				else
+				{
+					MetaClass ravClass = ModelImage.MetaData.Classes["ReplicatedAnalogValue"];
+					IEnumerable<ReplicatedAnalogValue> ravCollect = ModelImage.GetObjects(ravClass).Cast<ReplicatedAnalogValue>();
+					sourceAgreg = ravCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
+				}
+			}
+			if (sourceAgreg == null)
+			{
+				if (CreateRepVal)
+				{
+					sourceAgreg = CreateReplicateMeas(idAgrerSource);
+				}
+				else if (sourceAgreg == null)
+				{
+					throw new ArgumentException($"Для агрегируемого параметра {oi11.Id} не найден источник {idAgrerSource} ");
+				}
+			}
+			AnalogValue oiCk11 = (AnalogValue)ModelImage.GetObject(oi11.UidVal);
+			MetaClass MVSClass = ModelImage.MetaData.Classes["MeasurementValueSource"];
+			IEnumerable<MeasurementValueSource> mvsCollect = ModelImage.GetObjects(MVSClass).Cast<MeasurementValueSource>();
+			//AllOi oiAgreg = AllOiCollect.FirstOrDefault(x => x.idOI == agregVal.IdOI && x.Category == agregVal.CategoryOI);
+			MeasurementValueSource mvs = mvsCollect.First(x => x.name.Equals("Расчет"));
+			try
+			{
+				ModelImage.BeginTransaction();
+				Analog analog = oiCk11.Analog;
+				AggregatedAnalogValue aavNew = (AggregatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["AggregatedAnalogValue"]);
+				aavNew.name = mvt.name + " [Agr]";
+				aavNew.Source = sourceAgreg;
+				aavNew.MeasurementValueType = mvt;
+				if (oiCk11 is ReplicatedAnalogValue rv)
+				{
+					aavNew.InterpolationParams = rv.InterpolationParams;
+				}
+				if (oiCk11 is RapidBusIndirectAnalogValue rb)
+				{
+					aavNew.InterpolationParams = rb.InterpolationParams;
+				}
+
+				aavNew.valueFilterType = GetFilterType(agregVal.DFilter);
+				aavNew.schedule = GetSchedule(agregVal.Periodic);
+				if (agregVal.Periodic == 1)
+				{
+					aavNew.regularPeriod = agregVal.IStart;
+				}
+				else if (agregVal.Periodic == 0)
+				{
+					aavNew.intervalStart = new DateTime();
+					aavNew.intervalEnd = new DateTime();
+					aavNew.intervalStart += TimeSpan.FromSeconds(agregVal.IStart);
+					aavNew.intervalEnd += TimeSpan.FromSeconds(agregVal.IEnd);
+				}
+				/*else if (agregVal.Periodic == 7)
+				{
+					Log("Необходимо вручную заполнить временную зону для " + aavNew.name);
+				}*/
+				aavNew.Method = GetMethod(agregVal.IMethod);
+				aavNew.intermediateCalcStep = GetStep(agregVal.IStep);
+				aavNew.inverse = agregVal.Inv;
+				aavNew.queryStep = agregVal.ParamStep;//TODO: задается не всегда
+				aavNew.ParentObject = analog;
+				aavNew.Analog = analog;
+				aavNew.externalId = "Agr" +oi11.Id.Replace('H', 'W'); 
+				aavNew.MeasurementValueSource = mvs;
+				aavNew.HISPartition = hISPartition;				
+				ModelImage.CommitTransaction();
+				OIck11 oiRes = new OIck11
+				{
+					Name = aavNew.name,
+					UidMeas = aavNew.Analog.Uid,
+					UidVal = aavNew.Uid,
+					Id = oi11.Id.Replace('H', 'W'),
+					HISpartition = aavNew.HISPartition.name,
+					ValueSource = aavNew.MeasurementValueSource.name,
+					Class = "AggregatedAnalogValue",
+					MeasType = aavNew.Analog.MeasurementType.name,
+					ValueType = aavNew.MeasurementValueType.name
+				};
+				return oiRes;
+			}
+			catch (Exception ex)
+			{
+				ModelImage.RollbackTransaction(); 
+				throw new ArgumentException($"Не удалось создать агрегируемое значение {oi11.Id} в ИА: " + ex.Message);
+			}
+
+
+		}
+		private AggregationValueFilterType GetFilterType(string filter)
+		{
+			AggregationValueFilterType valueFilterType = new AggregationValueFilterType();
+			switch (filter)
+			{
+				case "*":
+					valueFilterType = AggregationValueFilterType.all;
+					break;
+				case "+":
+					valueFilterType = AggregationValueFilterType.positive;
+					break;
+				case "-":
+					valueFilterType = AggregationValueFilterType.negative;
+					break;
+			}
+			return valueFilterType;
+		}
+		private AggregationSchedule GetSchedule(int periodic)
+		{
+			AggregationSchedule schedule = new AggregationSchedule();
+			switch (periodic)
+			{
+				case 0:
+					schedule = AggregationSchedule.interval;
+					break;
+				case 1:
+					schedule = AggregationSchedule.regular;
+					break;
+				case 2:
+					schedule = AggregationSchedule.day;
+					break;
+				case 3:
+					schedule = AggregationSchedule.energyWeek;
+					break;
+				case 4:
+					schedule = AggregationSchedule.month;
+					break;
+				case 5:
+					schedule = AggregationSchedule.quarter;
+					break;
+				case 6:
+					schedule = AggregationSchedule.year;
+					break;
+				case 7:
+					schedule = AggregationSchedule.timeZone;
+					break;
+			}
+			return schedule;
+		}
+		private AggregationMethod GetMethod(int idMethod)
+		{
+			Guid methodGuid = new Guid();
+			switch (idMethod)
+			{
+				case 1:
+					methodGuid = new Guid("10001636-0000-0000-C000-0000006D746C");//Интеграл по правилу трапеций
+					break;
+				case 2:
+					methodGuid = new Guid("10001634-0000-0000-C000-0000006D746C");//Среднее по правилу трапеций
+					break;
+				case 3:
+					methodGuid = new Guid("10001635-0000-0000-C000-0000006D746C");//Интеграл по правилу прямоугольников
+					break;
+				case 4:
+					methodGuid = new Guid("10001633-0000-0000-C000-0000006D746C");//Среднее по правилу прямоугольников
+					break;
+				case 5:
+					methodGuid = new Guid("1000163B-0000-0000-C000-0000006D746C");//Сумма
+					break;
+				case 6:
+					methodGuid = new Guid("10001637-0000-0000-C000-0000006D746C");//Максимум
+					break;
+				case 7:
+					methodGuid = new Guid("10001639-0000-0000-C000-0000006D746C");//Минимум
+					break;
+				case 8:
+					methodGuid = new Guid("10001632-0000-0000-C000-0000006D746C");//Среднее арифметическое
+					break;
+			}
+			AggregationMethod method = (AggregationMethod)ModelImage.GetObject(methodGuid);
+			return method;
+		}
+		private double GetStep(int step)
+		{
+			if (step == 0)
+			{
+				return 0;
+			}
+			else if (step <= 60)
+			{
+				return 60;
+			}
+			else if (step <= 120)
+			{
+				return 120;
+			}
+			else if (step <= 180)
+			{
+				return 180;
+			}
+			else if (step <= 300)
+			{
+				return 300;
+			}
+			else if (step <= 360)
+			{
+				return 360;
+			}
+			else if (step <= 600)
+			{
+				return 600;
+			}
+			else if (step <= 900)
+			{
+				return 900;
+			}
+			else if (step <= 1800)
+			{
+				return 1800;
+			}
+			else { return step; }
+		}
 	}
 }

@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Formulas.cs" />
+    <Compile Include="Model\IntegParam.cs" />
     <Compile Include="Model\Operand.cs" />
     <Compile Include="ViewModel\AppViewModelBase.cs" />
     <Compile Include="Model\OperInfo.cs" />

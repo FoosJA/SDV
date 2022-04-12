@@ -63,6 +63,14 @@ namespace SDV
 		/// Все опранды формул СК-2007
 		/// </summary>
 		public ObservableCollection<OperandFrm> OperandCollect { get; set; }
+		/// <summary>
+		/// СДВ принимаемые в СК-2007
+		/// </summary>
+		public ObservableCollection<OIck07> TransmitCollect { get; set; }
+		/// <summary>
+		/// Все агрегируемые в СК-2007
+		/// </summary>
+		public ObservableCollection<IntegParam> AgrCollect { get; set; }
 
 		private ModelImage mImage;
 		private string BaseUrl;
@@ -108,7 +116,7 @@ namespace SDV
 			if (mImage != null)
 			{
 				OiHList.Clear();
-				FuncAIP = new Function(mImage,false);
+				FuncAIP = new Function(mImage, false);
 				MetaClass hisClass = mImage.MetaData.Classes["HISPartition"];
 				IEnumerable<HISPartition> hisCollect = mImage.GetObjects(hisClass).Cast<HISPartition>();
 				var hisH = hisCollect.First(x => x.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C"));//Аналоговые 1 ч и 30 минут
@@ -170,6 +178,8 @@ namespace SDV
 						Oi07List = dB.GetAllOI();
 						CalcValues = dB.GetCalcValue();
 						OperandCollect = dB.GetOperands();
+						TransmitCollect = dB.GetTransmitOi();
+						AgrCollect = dB.GetIntegParam();
 						Log($"Чтение БД СК-07 выполнено!");
 					}
 					catch (Exception ex)
@@ -205,72 +215,98 @@ namespace SDV
 			foreach (HalfHourMeas h in SelectedHList.ToArray())
 			{
 				await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-						
-				if (h.OIck07.CategoryH == "Внешняя система" || h.OIck07.CategoryW == "Внешняя система")
+				var test = TransmitCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
+				if (test != null || h.OIck07.CategoryH == "Внешняя система" || h.OIck07.CategoryW == "Внешняя система")
 				{
-					AnalogValue measVal = (AnalogValue)mImage.GetObject(h.OIck11.UidVal);
-					var newW = FuncAIP.CreateRBvalue(measVal);
+					var newW = FuncAIP.CreateRBvalue(h.OIck11);
 					OiHList.Remove(h);
 					SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 					SdvList.Add(sdv);
+					Log($"Создано {newW.Id} RapidBus");
 				}
 				else if (h.OIck07.CategoryW == "Дорасчет")
 				{
 					Formulas formulas = new Formulas();
 					try
 					{
-						formulas = CalcValues.First(x => x.CatRes=="W" && x.IdRes.ToString() == h.OIck11.Id.Remove(0,1));
-						var operands = (List<OperandFrm>)OperandCollect.Where(x => x.FID == formulas.FID && x.TypeFrm == formulas.TypeFrm).ToList();
-						string idOperand = operands[0].CatOperand + operands[0].IdOperand;
-						if (operands.Count() == 1 && idOperand == h.OIck11.Id)
+						formulas = CalcValues.First(x => x.CatRes == "W" && x.IdRes.ToString() == h.OIck11.Id.Remove(0, 1));
+					}
+					catch { Log($"Формула для { h.OIck07.Id} не найдена"); }
+					var operands = (List<OperandFrm>)OperandCollect.Where(x => x.FID == formulas.FID && x.TypeFrm == formulas.TypeFrm).ToList();
+					string idOperand = operands[0].CatOperand + operands[0].IdOperand;
+					if (operands.Count() == 1 && idOperand == h.OIck11.Id)
+					{
+						//тогда делаем как H	
+						if (h.OIck07.CategoryH == "Дорасчет")
 						{
-							//тогда делаем как H	
-							formulas = CalcValues.First(x => x.CatRes + x.IdRes == 'H' + h.OIck11.Id.Remove(0, 1));
 							try
 							{
+								formulas = CalcValues.First(x => x.CatRes + x.IdRes == 'H' + h.OIck11.Id.Remove(0, 1));
 								operands = (List<OperandFrm>)OperandCollect.Where(x => x.FID == formulas.FID && x.TypeFrm == formulas.TypeFrm).ToList();
-							}
-							catch(Exception ex)
-							{
-								Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
-							}
-							try
-							{
 								var newW = FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
 								OiHList.Remove(h);
 								SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 								SdvList.Add(sdv);
+								Log($"Создано {newW.Id} Дорасчёт");
 							}
 							catch (Exception ex)
 							{
 								Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
 							}
-
 						}
-						else
+						else if (h.OIck07.CategoryH == "Агрегирование")
 						{
 							try
 							{
-								//создаем значение W дорасчёт
-								var newW=FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
+								var newW = FuncAIP.CreateAgregateValue(h.OIck11, AgrCollect.ToList());
 								OiHList.Remove(h);
 								SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 								SdvList.Add(sdv);
+								Log($"Создано {newW.Id} Агрегирование");
 							}
-							catch(Exception ex)
+							catch (Exception ex)
 							{
 								Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
 							}
-							
 						}
 					}
-					catch { Log($"Формула для { h.OIck07.Id} не найдена"); }
-
+					else
+					{
+						try
+						{
+							//создаем значение W дорасчёт
+							var newW = FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Дорасчёт");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+						}
+					}
 				}
 				else if (h.OIck07.CategoryW == "Без заполнения" || h.OIck07.CategoryW == "Источник ПВ")
 				{
-
-					//CreateCalcvalue();
+					try
+					{
+						Formulas formulas = CalcValues.First(x => x.CatRes == "H" && x.IdRes.ToString() == h.OIck11.Id.Remove(0, 1));
+						var operands = (List<OperandFrm>)OperandCollect.Where(x => x.FID == formulas.FID && x.TypeFrm == formulas.TypeFrm).ToList();
+						var newW = FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
+						OiHList.Remove(h);
+						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+						SdvList.Add(sdv);
+						Log($"Создано {newW.Id} Дорасчёт");
+					}
+					catch (Exception ex)
+					{
+						Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+					}
+				}
+				else
+				{
+					Log($"Ошибка создания дорасчёта для {h.OIck11.Id}");
 				}
 
 			}

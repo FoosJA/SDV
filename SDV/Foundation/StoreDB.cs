@@ -30,6 +30,53 @@ order by  [ID]
 
             ";
 
+        public const string TransmitQuery =
+             @"
+
+
+SELECT et.Abbr+' '+EnObj.Name  as [Объект] 
+,'W' as [Тип ОИ]------!!!!!
+,DEFDRPARAM.ID as [Номер ТС в ДЦ источнике] 
+,p.Abbr as [Тип]
+,DEFDRPARAM.name as [Наименование ТС в ДЦ-получателе]
+
+,RCV_S.RTU as [ДЦ-источник]
+
+FROM   DEFDRPARAM INNER JOIN  EnObj ON DEFDRPARAM.EObject = EnObj.ID 
+--Inner join  TSCat c on DEFDRPARAM.Category=c.ID
+inner join  ParTypes p on DEFDRPARAM.Type=p.ID
+Inner join  EnObjType et on EnObj.Type=et.ID
+inner join (SELECT SND.ID, Тип, RTU,[Addr_Id],[inv],DtSetId FROM(
+	  select s.ID as DtSetId, p.OI ,p.IDOI as id, ' Набор ТМ' as Тип, RTU.Name as RTU,cast(isnull(mask,addr) as sql_variant) as 'Addr_Id',inv from  dtParam2 p, dtSet s INNER JOIN  RTU ON s.RTUID = RTU.ID where p.SetID=s.ID and s.Enable=1 and s.trans=1
+union select s.ID as DtSetId, p.OI  as 'OI',p.IDOI as ID, ' Набор ICCP' as Тип, RTU.Name as RTU,cast(i.RemoteDomain+':'+cast(s.SetID as varchar)+':'+cast(Identifier as varchar) as sql_variant) as 'Addr_Id', inv
+--select p.OI  as 'OI',p.IDOI as ID, ' Набор ICCP' as Тип, RTU.Name as RTU,cast(i.RemoteDomain+'::'+cast(Identifier as varchar) as sql_variant) as 'Addr_Id', inv
+--select p.OI  as 'OI',p.IDOI as ID, ' Набор ICCP' as Тип, RTU.Name as RTU,cast(/*iif(Scope=1,'::',i.RemoteDomain+'::')+*/cast(Identifier as varchar) as sql_variant) as 'Addr_Id', inv 
+	  from  dtParam6 p INNER JOIN  dtSet s on p.SetID=s.ID INNER JOIN  RTU ON s.RTUID = RTU.ID INNER JOIN  RTU_ICCP I ON s.RTUID = I.RTUID where 
+	  s.Enable=1 and s.trans=1 and rtu.Name not like '%ICCPAVT%'
+) AS SND WHERE (snd.OI = 'W')) AS RCV_S on DEFDRPARAM.ID=RCV_S.ID------!!!!!
+
+union
+SELECT et.Abbr+' '+EnObj.Name  as [Объект] 
+,'H' as [Тип ОИ]------!!!!!
+,DefDRParam.ID as [Номер ТС в ДЦ источнике] 
+,p.Abbr as [Тип]
+,DefDRParam.name as [Наименование ТС в ДЦ-получателе]
+,RCV_S.RTU as [ДЦ-источник]
+FROM   DefDRParam INNER JOIN  EnObj ON DefDRParam.EObject = EnObj.ID 
+inner join  ParTypes p on DefDRParam.Type=p.ID
+Inner join  EnObjType et on EnObj.Type=et.ID
+inner join (SELECT SND.ID, Тип, RTU,[Addr_Id],[inv],DtSetId FROM(
+	  select  s.ID as DtSetId,p.OI ,p.IDOI as id, ' Набор ТМ' as Тип, RTU.Name as RTU,cast(isnull(mask,addr) as sql_variant) as 'Addr_Id',inv from  dtParam2 p, dtSet s INNER JOIN  RTU ON s.RTUID = RTU.ID where p.SetID=s.ID and s.Enable=1 and s.trans=1
+union select  s.ID as DtSetId,p.OI  as 'OI',p.IDOI as ID, ' Набор ICCP' as Тип, RTU.Name as RTU,cast(i.RemoteDomain+':'+cast(s.SetID as varchar)+':'+cast(Identifier as varchar) as sql_variant) as 'Addr_Id', inv
+--select p.OI  as 'OI',p.IDOI as ID, ' Набор ICCP' as Тип, RTU.Name as RTU,cast(i.RemoteDomain+'::'+cast(Identifier as varchar) as sql_variant) as 'Addr_Id', inv
+	  from  dtParam6 p INNER JOIN  dtSet s on p.SetID=s.ID INNER JOIN  RTU ON s.RTUID = RTU.ID INNER JOIN  RTU_ICCP I ON s.RTUID = I.RTUID where 
+	  s.Enable=1 and s.trans=1 and rtu.Name not like '%ICCPAVT%'
+) AS SND WHERE (snd.OI = 'H')) AS RCV_S on DefDRParam.ID=RCV_S.ID------!!!!!
+
+
+order by   [Тип ОИ], [Номер ТС в ДЦ источнике]
+
+            ";
 
         public const string CalcValueQuery =
             @"
@@ -38,6 +85,7 @@ select 304,cast(Formulas.Txt as varchar(max)), Formulas.ID
 	   ,cast(Formulas.Frml as varchar(max))
 	    from Formulas WHERE (Formulas.OutOfWork = 1) 
             ";
+        
 
         public const string OperandsQuery =
            @"
@@ -103,6 +151,49 @@ SELECT  [ID]
                 return oiCollect;
             }
         }
+        public ObservableCollection<IntegParam> GetIntegParam()
+        {
+            ObservableCollection<IntegParam> integParamCollect = new ObservableCollection<IntegParam>();
+            var query = AgregateQuery;
+            var strBuilder = new SqlConnectionStringBuilder()
+            {
+                DataSource = serverName,
+                IntegratedSecurity = true,
+                InitialCatalog = dbName
+            };
+            var connString = strBuilder.ConnectionString;
+
+            using (var connection = new SqlConnection(connString))
+            {
+                connection.Open();
+                using (SqlCommand com = new SqlCommand(query, connection))
+                {
+                    var reader = com.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        IntegParam param = new IntegParam();
+                        param.CategorySource = (string)reader[1];
+                        param.IdSource = (int)reader[2];
+                        param.CategoryOI = (string)reader[3];
+                        param.IdOI = (int)reader[4];
+                        param.IMethod = (int)reader[5];
+                        param.Periodic = (int)reader[6];
+                        param.IStart = (reader[7] != DBNull.Value) ? (int)reader[7] : 0;
+                        param.IEnd = (int)reader[8];
+                        param.IStep = (reader[9] != DBNull.Value) ? (int)reader[9] : 0;
+                        param.DFilter = (string)reader[10];
+                        param.Inv = (bool)reader[12];
+                        param.DFilterValue = (reader[13] is double readerVal) ? readerVal : 0;
+                        //param.DFilterValue = (reader[13] is DBNull.Value) ? (double)reader[13] : 0;
+                        param.ParamStep = (reader[15] != DBNull.Value) ? (int)reader[15] : 0;
+                        param.TimeZone = (reader[16] != DBNull.Value) ? (int)reader[16] : 0;
+                        integParamCollect.Add(param);
+                    }
+                }
+            }
+
+            return integParamCollect;
+        }
         public ObservableCollection<OperandFrm> GetOperands()
         {
             ObservableCollection<OperandFrm> formulasCollect = new ObservableCollection<OperandFrm>();
@@ -138,6 +229,35 @@ SELECT  [ID]
             }
 
             return formulasCollect;
+        }
+        public ObservableCollection<OIck07> GetTransmitOi()
+		{
+            var query = TransmitQuery;
+            var strBuilder = new SqlConnectionStringBuilder()
+            {
+                DataSource = serverName,
+                IntegratedSecurity = true,
+                InitialCatalog = dbName
+            };
+            var connString = strBuilder.ConnectionString;
+            ObservableCollection<OIck07> oiCollect = new ObservableCollection<OIck07>();
+            using (var connection = new SqlConnection(connString))
+            {
+                connection.Open();
+                using (SqlCommand com = new SqlCommand(query, connection))
+                {
+                    var reader = com.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        oiCollect.Add(new OIck07()
+                        {
+                            Id =  reader[1].ToString()+ reader[2].ToString(),
+                            Name = (string)reader[4]
+                        });
+                    }
+                }
+                return oiCollect;
+            }
         }
         public ObservableCollection<Formulas> GetCalcValue()
         {
