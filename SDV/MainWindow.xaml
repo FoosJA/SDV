@@ -21,7 +21,8 @@
             <RowDefinition Height="15"/>
         </Grid.RowDefinitions>
         <Menu  VerticalAlignment="Center" Background="Transparent" Grid.Row="0">
-            <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>            
+            <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>
+            <MenuItem Header="Настройки" Command="{Binding SettingsCommand}"/>
         </Menu>
         <ToolBar Grid.Row="1" VerticalAlignment="Center" Background="AliceBlue">
             <Button Content=" 1. Создать W " Command="{Binding CreateCommand}"/>

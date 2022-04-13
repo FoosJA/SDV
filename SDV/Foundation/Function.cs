@@ -20,7 +20,6 @@ namespace SDV.Foundation
 		{
 			ModelImage = mImage;
 			CreateRepVal = createRepVal;
-
 		}
 		/// <summary>
 		/// Создание RB значения
@@ -75,15 +74,15 @@ namespace SDV.Foundation
 		/// <param name="allFormulas"></param>
 		/// <param name="allOperands"></param>
 		/// <returns></returns>
-		public OIck11 CreateCalcvalue(OIck11 oi11,char cat, IEnumerable<Formulas> allFormulas, IEnumerable<OperandFrm> allOperands)
+		public OIck11 CreateCalcvalue(OIck11 oi11, char cat, IEnumerable<Formulas> allFormulas, IEnumerable<OperandFrm> allOperands)
 		{
 			List<(MeasurementValue, string)> operandList = new List<(MeasurementValue, string)>();
 			Formulas cv;
 			List<OperandFrm> operands;
 			try
 			{
-				 cv = allFormulas.First(x => x.CatRes + x.IdRes == cat + oi11.Id.Remove(0, 1));
-				 operands = (List<OperandFrm>)allOperands.Where(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm).ToList();
+				cv = allFormulas.First(x => x.CatRes + x.IdRes == cat + oi11.Id.Remove(0, 1));
+				operands = (List<OperandFrm>)allOperands.Where(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm).ToList();
 			}
 			catch
 			{
@@ -101,7 +100,7 @@ namespace SDV.Foundation
 					{
 						MetaClass rdvClass = ModelImage.MetaData.Classes["ReplicatedDiscreteValue"];
 						IEnumerable<ReplicatedDiscreteValue> rdvCollect = ModelImage.GetObjects(rdvClass).Cast<ReplicatedDiscreteValue>();
-						mvOperand = rdvCollect.FirstOrDefault(x => x.sourceId == operand.CatOperand + operand.IdOperand);						
+						mvOperand = rdvCollect.FirstOrDefault(x => x.sourceId == operand.CatOperand + operand.IdOperand);
 					}
 					else
 					{
@@ -137,7 +136,7 @@ namespace SDV.Foundation
 			foreach (string operandFrm in frmRange)
 			{
 				string mvOperandSourceId = operandFrm.Remove(operandFrm.Length - 1);
-				OperandFrm operand = operands.FirstOrDefault(x => x.CatOperand + x.IdOperand == mvOperandSourceId && x.Field==0);
+				OperandFrm operand = operands.FirstOrDefault(x => x.CatOperand + x.IdOperand == mvOperandSourceId && x.Field == 0);
 				//try
 				//{
 				if (operand == null)//Если в формуле операндом является еще одна формула
@@ -365,12 +364,12 @@ namespace SDV.Foundation
 			string idAgrerSource;
 			try
 			{
-				 agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == oi11.Id);
+				agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == oi11.Id);
 				idAgrerSource = agregVal.CategorySource + agregVal.IdSource;
 			}
 			catch
 			{
-				throw new ArgumentException("Не найдены параметры агрегирования. Возможно контроль в СК-07 отключен.") ;
+				throw new ArgumentException("Не найдены параметры агрегирования. Возможно контроль в СК-07 отключен.");
 			}
 			MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
 			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
@@ -444,6 +443,101 @@ namespace SDV.Foundation
 				aavNew.intermediateCalcStep = GetStep(agregVal.IStep);
 				aavNew.inverse = agregVal.Inv;
 				aavNew.queryStep = agregVal.ParamStep;//TODO: задается не всегда
+				aavNew.ParentObject = analog;
+				aavNew.Analog = analog;
+				aavNew.externalId = "Agr" + oi11.Id.Replace('H', 'W');
+				aavNew.MeasurementValueSource = mvs;
+				aavNew.HISPartition = hISPartition;
+				ModelImage.CommitTransaction();
+				OIck11 oiRes = new OIck11
+				{
+					Name = aavNew.name,
+					UidMeas = aavNew.Analog.Uid,
+					UidVal = aavNew.Uid,
+					Id = oi11.Id.Replace('H', 'W'),
+					HISpartition = aavNew.HISPartition.name,
+					ValueSource = aavNew.MeasurementValueSource.name,
+					Class = "AggregatedAnalogValue",
+					MeasType = aavNew.Analog.MeasurementType.name,
+					ValueType = aavNew.MeasurementValueType.name
+				};
+				return oiRes;
+			}
+			catch (Exception ex)
+			{
+				ModelImage.RollbackTransaction();
+				throw new ArgumentException($"Не удалось создать агрегируемое значение {oi11.Id} в ИА: " + ex.Message);
+			}
+
+
+		}
+		public OIck11 CreateAgregateValue(OIck11 oi11, DrSource drSource)
+		{
+			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
+			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
+			AggregationMethod am = (AggregationMethod)ModelImage.GetObject(new Guid("10001634-0000-0000-C000-0000006D746C"));//Среднее по правилу трапеции
+			IntegParam agregVal;
+			string idAgrerSource = drSource.IdSource;
+
+			MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
+			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
+			var sourceAgreg = mvCollect.FirstOrDefault(x => x.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "") == idAgrerSource);
+			if (sourceAgreg == null)
+			{
+				if (idAgrerSource.Substring(0, 1) == "S")
+				{
+					MetaClass rdvClass = ModelImage.MetaData.Classes["ReplicatedDiscreteValue"];
+					IEnumerable<ReplicatedDiscreteValue> rdvCollect = ModelImage.GetObjects(rdvClass).Cast<ReplicatedDiscreteValue>();
+					sourceAgreg = rdvCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
+				}
+				else
+				{
+					MetaClass ravClass = ModelImage.MetaData.Classes["ReplicatedAnalogValue"];
+					IEnumerable<ReplicatedAnalogValue> ravCollect = ModelImage.GetObjects(ravClass).Cast<ReplicatedAnalogValue>();
+					sourceAgreg = ravCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
+				}
+			}
+			if (sourceAgreg == null)
+			{
+				if (CreateRepVal)
+				{
+					sourceAgreg = CreateReplicateMeas(idAgrerSource);
+				}
+				else if (sourceAgreg == null)
+				{
+					throw new ArgumentException($"Для агрегируемого параметра {oi11.Id} не найден источник {idAgrerSource} ");
+				}
+			}
+
+			AnalogValue oiCk11 = (AnalogValue)ModelImage.GetObject(oi11.UidVal);
+			MetaClass MVSClass = ModelImage.MetaData.Classes["MeasurementValueSource"];
+			IEnumerable<MeasurementValueSource> mvsCollect = ModelImage.GetObjects(MVSClass).Cast<MeasurementValueSource>();
+			MeasurementValueSource mvs = mvsCollect.First(x => x.name.Equals("Расчет"));
+			try
+			{
+				ModelImage.BeginTransaction();
+				Analog analog = oiCk11.Analog;
+				AggregatedAnalogValue aavNew = (AggregatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["AggregatedAnalogValue"]);
+				aavNew.name = mvt.name + " [Agr]";
+				aavNew.Source = sourceAgreg;
+				aavNew.MeasurementValueType = mvt;
+				/*if (oiCk11 is ReplicatedAnalogValue rv)
+				{
+					aavNew.InterpolationParams = rv.InterpolationParams;
+				}
+				if (oiCk11 is RapidBusIndirectAnalogValue rb)
+				{
+					aavNew.InterpolationParams = rb.InterpolationParams;
+				}*/
+				//TODO: тут возможно придется менять
+				aavNew.valueFilterType = AggregationValueFilterType.all;
+				aavNew.schedule = AggregationSchedule.regular;
+				aavNew.regularPeriod = 60;
+				aavNew.Method = am;
+				aavNew.intermediateCalcStep = 3600;
+				aavNew.inverse = drSource.Inv;
+				aavNew.queryStep = 0;
+
 				aavNew.ParentObject = analog;
 				aavNew.Analog = analog;
 				aavNew.externalId = "Agr" + oi11.Id.Replace('H', 'W');

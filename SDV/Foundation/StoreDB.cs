@@ -29,6 +29,10 @@ inner join  FillType f on DefDRParam.Fill=f.ID
 order by  [ID]
 
             ";
+        public const string DrSourceQuery =
+             @"
+select * from DRSource
+            ";
 
         public const string TransmitQuery =
              @"
@@ -145,6 +149,43 @@ SELECT  [ID]
                             Name = (string)reader[2],
                             CategoryH = (string)reader[3],
                             CategoryW = (string)reader[4]
+                        });
+                    }
+                }
+                return oiCollect;
+            }
+        }
+        public ObservableCollection<DrSource> GetDrSource()
+        {
+            var query = DrSourceQuery;
+            var strBuilder = new SqlConnectionStringBuilder()
+            {
+                DataSource = serverName,
+                IntegratedSecurity = true,
+                InitialCatalog = dbName
+            };
+            var connString = strBuilder.ConnectionString;
+            ObservableCollection<DrSource> oiCollect = new ObservableCollection<DrSource>();
+            using (var connection = new SqlConnection(connString))
+            {
+                connection.Open();
+                using (SqlCommand com = new SqlCommand(query, connection))
+                {
+                    var reader = com.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string id;
+                        var drnum = Convert.ToInt32(reader[1]);
+                        if (drnum == 2)
+                            id = "H" + reader[0].ToString();
+                        else
+                            id="W"+ reader[0].ToString();
+                        oiCollect.Add(new DrSource()
+                        {
+                            Id = id,
+                            IdSource = reader[2].ToString()+ reader[3].ToString(),
+                            Inv = Convert.ToBoolean(reader[4]),
+                            NumbParam = Convert.ToInt32( reader[5])
                         });
                     }
                 }

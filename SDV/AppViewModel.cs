@@ -71,6 +71,7 @@ namespace SDV
 		/// Все агрегируемые в СК-2007
 		/// </summary>
 		public ObservableCollection<IntegParam> AgrCollect { get; set; }
+		public ObservableCollection<DrSource> DrCollect { get; set; }
 
 		private ModelImage mImage;
 		private string BaseUrl;
@@ -116,7 +117,7 @@ namespace SDV
 			if (mImage != null)
 			{
 				OiHList.Clear();
-				FuncAIP = new Function(mImage, false);
+				FuncAIP = new Function(mImage, CreateRepVal);
 				MetaClass hisClass = mImage.MetaData.Classes["HISPartition"];
 				IEnumerable<HISPartition> hisCollect = mImage.GetObjects(hisClass).Cast<HISPartition>();
 				var hisH = hisCollect.First(x => x.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C"));//Аналоговые 1 ч и 30 минут
@@ -180,6 +181,7 @@ namespace SDV
 						OperandCollect = dB.GetOperands();
 						TransmitCollect = dB.GetTransmitOi();
 						AgrCollect = dB.GetIntegParam();
+						DrCollect = dB.GetDrSource();
 						Log($"Чтение БД СК-07 выполнено!");
 					}
 					catch (Exception ex)
@@ -216,8 +218,10 @@ namespace SDV
 			{
 				await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 				var isTransmit = TransmitCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
-				var isAgregH = AgrCollect.FirstOrDefault(x => x.CategoryOI+ x.IdOI == h.OIck07.Id);
+				var isAgregH = AgrCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == h.OIck07.Id);
 				var isCalcH = CalcValues.FirstOrDefault(x => x.CatRes + x.IdRes.ToString() == h.OIck11.Id);
+				var isDrW = DrCollect.FirstOrDefault(x => x.Id == h.OIck07.Id.Replace('H', 'W'));
+				var isDrH = DrCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
 
 				if (isTransmit != null || h.OIck07.CategoryH == "Внешняя система" || h.OIck07.CategoryW == "Внешняя система")
 				{
@@ -226,6 +230,22 @@ namespace SDV
 					SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 					SdvList.Add(sdv);
 					Log($"Создано {newW.Id} RapidBus");
+				}
+				else if (isDrW != null)
+				{
+
+					try
+					{
+						var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW);
+						OiHList.Remove(h);
+						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+						SdvList.Add(sdv);
+						Log($"Создано {newW.Id} Агрегирование");
+					}
+					catch (Exception ex)
+					{
+						Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+					}
 				}
 				else if (h.OIck07.CategoryW == "Дорасчет")
 				{
@@ -240,7 +260,7 @@ namespace SDV
 					if (operands.Count() == 1 && idOperand == h.OIck11.Id)
 					{
 						//тогда делаем как H	
-						if (isCalcH !=null)
+						if (isCalcH != null)
 						{
 							try
 							{
@@ -346,6 +366,43 @@ namespace SDV
 		public ICommand CopyCommand { get { return new RelayCommand(CopyUidTempExecute); } }
 
 		private void CopyUidTempExecute() { Clipboard.SetText(SelectedH.OIck11.UidVal.ToString()); }
+
+		public ICommand SettingsCommand { get { return new RelayCommand(SettingsExecute, CanCorrectSettings); } }
+		private bool CanCorrectSettings() { return mImage != null; }
+		public bool CreateRepVal { get; set; }
+		public bool CreateAgregVal { get; set; }
+		public bool CreateCalcVal { get; set; }
+		public Analog AnalogForVal { get; set; }
+		public Discrete DiscreteForVal { get; set; }
+		public void SettingsExecute()
+		{
+			SettingsWindow settingstWindow = new SettingsWindow(CreateAgregVal, CreateCalcVal, CreateRepVal) { Owner = App.Current.MainWindow };
+			settingstWindow.ShowDialog();
+			if (settingstWindow.SaveChange)
+			{
+				if ((Analog)mImage.GetObject(settingstWindow.GuidAnalog) == null)
+				{
+					Log($"В ИМ не найден Аналог {settingstWindow.GuidAnalog}");
+				}
+				else
+				{
+					AnalogForVal = (Analog)mImage.GetObject(settingstWindow.GuidAnalog);
+				}
+				if ((Discrete)mImage.GetObject(settingstWindow.GuidDiscrete) == null)
+				{
+					Log($"В ИМ не найден Дискрет {settingstWindow.GuidDiscrete}");
+				}
+				else
+				{
+					DiscreteForVal = (Discrete)mImage.GetObject(settingstWindow.GuidDiscrete);
+				}
+				CreateAgregVal = settingstWindow.TriggerAgreg;
+				CreateCalcVal = settingstWindow.TriggerCalc;
+				CreateRepVal = settingstWindow.TriggerСreateRep;
+				FuncAIP.CreateRepVal = CreateRepVal;
+				Log("Настройки сохранены");
+			}
+		}
 		#endregion
 
 
