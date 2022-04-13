@@ -215,8 +215,11 @@ namespace SDV
 			foreach (HalfHourMeas h in SelectedHList.ToArray())
 			{
 				await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-				var test = TransmitCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
-				if (test != null || h.OIck07.CategoryH == "Внешняя система" || h.OIck07.CategoryW == "Внешняя система")
+				var isTransmit = TransmitCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
+				var isAgregH = AgrCollect.FirstOrDefault(x => x.CategoryOI+ x.IdOI == h.OIck07.Id);
+				var isCalcH = CalcValues.FirstOrDefault(x => x.CatRes + x.IdRes.ToString() == h.OIck11.Id);
+
+				if (isTransmit != null || h.OIck07.CategoryH == "Внешняя система" || h.OIck07.CategoryW == "Внешняя система")
 				{
 					var newW = FuncAIP.CreateRBvalue(h.OIck11);
 					OiHList.Remove(h);
@@ -237,13 +240,11 @@ namespace SDV
 					if (operands.Count() == 1 && idOperand == h.OIck11.Id)
 					{
 						//тогда делаем как H	
-						if (h.OIck07.CategoryH == "Дорасчет")
+						if (isCalcH !=null)
 						{
 							try
 							{
-								formulas = CalcValues.First(x => x.CatRes + x.IdRes == 'H' + h.OIck11.Id.Remove(0, 1));
-								operands = (List<OperandFrm>)OperandCollect.Where(x => x.FID == formulas.FID && x.TypeFrm == formulas.TypeFrm).ToList();
-								var newW = FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
+								var newW = FuncAIP.CreateCalcvalue(h.OIck11, 'H', CalcValues, OperandCollect);
 								OiHList.Remove(h);
 								SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 								SdvList.Add(sdv);
@@ -254,7 +255,7 @@ namespace SDV
 								Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
 							}
 						}
-						else if (h.OIck07.CategoryH == "Агрегирование")
+						else if (isAgregH != null)
 						{
 							try
 							{
@@ -266,16 +267,17 @@ namespace SDV
 							}
 							catch (Exception ex)
 							{
-								Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+								Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
 							}
 						}
+						else { Log($"Проверить! Ошибка создания  {h.OIck11.Id}"); }
 					}
 					else
 					{
 						try
 						{
 							//создаем значение W дорасчёт
-							var newW = FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
+							var newW = FuncAIP.CreateCalcvalue(h.OIck11, 'W', CalcValues, OperandCollect);
 							OiHList.Remove(h);
 							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 							SdvList.Add(sdv);
@@ -289,24 +291,45 @@ namespace SDV
 				}
 				else if (h.OIck07.CategoryW == "Без заполнения" || h.OIck07.CategoryW == "Источник ПВ")
 				{
-					try
+					//тогда делаем как H	
+					if (isCalcH != null)
 					{
-						Formulas formulas = CalcValues.First(x => x.CatRes == "H" && x.IdRes.ToString() == h.OIck11.Id.Remove(0, 1));
-						var operands = (List<OperandFrm>)OperandCollect.Where(x => x.FID == formulas.FID && x.TypeFrm == formulas.TypeFrm).ToList();
-						var newW = FuncAIP.CreateCalcvalue(h.OIck11, formulas, operands, CalcValues, OperandCollect);
-						OiHList.Remove(h);
-						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
-						SdvList.Add(sdv);
-						Log($"Создано {newW.Id} Дорасчёт");
+						try
+						{
+							var newW = FuncAIP.CreateCalcvalue(h.OIck11, 'H', CalcValues, OperandCollect);
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Дорасчёт");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+						}
 					}
-					catch (Exception ex)
+					else if (isAgregH != null)
 					{
-						Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+						try
+						{
+							var newW = FuncAIP.CreateAgregateValue(h.OIck11, AgrCollect.ToList());
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Агрегирование");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+						}
+					}
+					else
+					{
+						Log($"Проверить! Ошибка создания  {h.OIck11.Id}");
 					}
 				}
 				else
 				{
-					Log($"Ошибка создания дорасчёта для {h.OIck11.Id}");
+					Log($"Проверить! Ошибка создания   {h.OIck11.Id}");
 				}
 
 			}

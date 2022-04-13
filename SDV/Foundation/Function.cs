@@ -75,9 +75,20 @@ namespace SDV.Foundation
 		/// <param name="allFormulas"></param>
 		/// <param name="allOperands"></param>
 		/// <returns></returns>
-		public OIck11 CreateCalcvalue(OIck11 oi11, Formulas cv, List<OperandFrm> operands, IEnumerable<Formulas> allFormulas, IEnumerable<OperandFrm> allOperands)
+		public OIck11 CreateCalcvalue(OIck11 oi11,char cat, IEnumerable<Formulas> allFormulas, IEnumerable<OperandFrm> allOperands)
 		{
 			List<(MeasurementValue, string)> operandList = new List<(MeasurementValue, string)>();
+			Formulas cv;
+			List<OperandFrm> operands;
+			try
+			{
+				 cv = allFormulas.First(x => x.CatRes + x.IdRes == cat + oi11.Id.Remove(0, 1));
+				 operands = (List<OperandFrm>)allOperands.Where(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm).ToList();
+			}
+			catch
+			{
+				throw new ArgumentException("Не найдена формула в БД СК-07. Возможно контроль отключен.");
+			}
 			//Проверка все ли есть операнды в ИМ			
 			foreach (var operand in operands)
 			{
@@ -90,7 +101,7 @@ namespace SDV.Foundation
 					{
 						MetaClass rdvClass = ModelImage.MetaData.Classes["ReplicatedDiscreteValue"];
 						IEnumerable<ReplicatedDiscreteValue> rdvCollect = ModelImage.GetObjects(rdvClass).Cast<ReplicatedDiscreteValue>();
-						mvOperand = rdvCollect.FirstOrDefault(x => x.sourceId == operand.CatOperand + operand.IdOperand);
+						mvOperand = rdvCollect.FirstOrDefault(x => x.sourceId == operand.CatOperand + operand.IdOperand);						
 					}
 					else
 					{
@@ -126,42 +137,53 @@ namespace SDV.Foundation
 			foreach (string operandFrm in frmRange)
 			{
 				string mvOperandSourceId = operandFrm.Remove(operandFrm.Length - 1);
-				OperandFrm operand = null;
-				try
+				OperandFrm operand = operands.FirstOrDefault(x => x.CatOperand + x.IdOperand == mvOperandSourceId && x.Field==0);
+				//try
+				//{
+				if (operand == null)//Если в формуле операндом является еще одна формула
 				{
-					if (mvOperandSourceId.Remove(1) == "Z")//Не понятно зачем
+					try
 					{
-						Formulas cvZ = allFormulas.FirstOrDefault(x => x.TypeFrm == cv.TypeFrm && x.FID.ToString() == mvOperandSourceId.Substring(1));
-						operand = allOperands.FirstOrDefault(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm
-						&& (x.CatOperand + x.IdOperand) == (cvZ.CatRes + cvZ.IdRes));
+						if (mvOperandSourceId.Remove(1) == "Z")
+						{
+							Formulas cvZ = allFormulas.FirstOrDefault(x => x.TypeFrm == cv.TypeFrm && x.FID.ToString() == mvOperandSourceId.Substring(1));
+							operand = allOperands.FirstOrDefault(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm
+							&& (x.CatOperand + x.IdOperand) == (cvZ.CatRes + cvZ.IdRes));
+						}
 					}
-					else
-					{
-						operand = allOperands.FirstOrDefault(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm
-						&& (x.CatOperand + x.IdOperand) == mvOperandSourceId);
-					}
+					catch (ArgumentOutOfRangeException) { continue; }
 				}
-				catch (ArgumentOutOfRangeException) { continue; }
+				/*else
+				{
+					operand = allOperands.FirstOrDefault(x => x.FID == cv.FID && x.TypeFrm == cv.TypeFrm
+					&& (x.CatOperand + x.IdOperand) == mvOperandSourceId);
+				}*/
+				//}
+				//catch (ArgumentOutOfRangeException) { continue; }
 				if (operand != null)
 				{
-					var t = operands.First(x => x.CatOperand + x.IdOperand == operand.CatOperand + operand.IdOperand);
+					//var t = operands.First(x => x.CatOperand + x.IdOperand == operand.CatOperand + operand.IdOperand);
 					string leng = operandFrm.Substring(operandFrm.Length - 1);
 					if (leng == "V")
 					{
-						t.Field = MeasValueAttribute.value;
+						operand.Field = MeasValueAttribute.value;
 					}
 					else if (leng == "F")
 					{
 
-						t.Field = MeasValueAttribute.qualityCode;
-						t.OperandLit += "Ф";
+						operand.Field = MeasValueAttribute.qualityCode;
+						operand.OperandLit += "Ф";
 					}
 					else if (leng == "T")
 					{
-						t.Field = MeasValueAttribute.writeTime;
-						t.OperandLit += "Т";
+						operand.Field = MeasValueAttribute.writeTime;
+						operand.OperandLit += "Т";
 					}
 				}
+				/*else
+				{
+					throw new ArgumentException($"Проверить операнд {mvOperandSourceId} для формулы {oi11.Id}");
+				}*/
 			}
 
 			List<string> operandFrmList = new List<string>();
@@ -339,10 +361,17 @@ namespace SDV.Foundation
 		{
 			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
 			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
-			var agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == oi11.Id);
-			var idAgrerSource = agregVal.CategorySource + agregVal.IdSource;
-
-
+			IntegParam agregVal;
+			string idAgrerSource;
+			try
+			{
+				 agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == oi11.Id);
+				idAgrerSource = agregVal.CategorySource + agregVal.IdSource;
+			}
+			catch
+			{
+				throw new ArgumentException("Не найдены параметры агрегирования. Возможно контроль в СК-07 отключен.") ;
+			}
 			MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
 			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
 			var sourceAgreg = mvCollect.FirstOrDefault(x => x.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "") == idAgrerSource);
@@ -417,9 +446,9 @@ namespace SDV.Foundation
 				aavNew.queryStep = agregVal.ParamStep;//TODO: задается не всегда
 				aavNew.ParentObject = analog;
 				aavNew.Analog = analog;
-				aavNew.externalId = "Agr" +oi11.Id.Replace('H', 'W'); 
+				aavNew.externalId = "Agr" + oi11.Id.Replace('H', 'W');
 				aavNew.MeasurementValueSource = mvs;
-				aavNew.HISPartition = hISPartition;				
+				aavNew.HISPartition = hISPartition;
 				ModelImage.CommitTransaction();
 				OIck11 oiRes = new OIck11
 				{
@@ -437,7 +466,7 @@ namespace SDV.Foundation
 			}
 			catch (Exception ex)
 			{
-				ModelImage.RollbackTransaction(); 
+				ModelImage.RollbackTransaction();
 				throw new ArgumentException($"Не удалось создать агрегируемое значение {oi11.Id} в ИА: " + ex.Message);
 			}
 
