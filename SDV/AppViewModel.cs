@@ -233,10 +233,16 @@ namespace SDV
 				}
 				else if (isDrW != null)
 				{
-
+					
 					try
 					{
-						var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW);
+						OIck11 newW;
+						if (isDrW.IdSource == isDrW.Id.Replace('W', 'H'))
+						{
+							newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrH);
+						}
+						else
+						{ newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW); }
 						OiHList.Remove(h);
 						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 						SdvList.Add(sdv);
@@ -290,7 +296,23 @@ namespace SDV
 								Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
 							}
 						}
+						else if (isDrH != null)
+						{
+							try
+							{
+								var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrH);
+								OiHList.Remove(h);
+								SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+								SdvList.Add(sdv);
+								Log($"Создано {newW.Id} Агрегирование");
+							}
+							catch (Exception ex)
+							{
+								Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+							}
+						}
 						else { Log($"Проверить! Ошибка создания  {h.OIck11.Id}"); }
+
 					}
 					else
 					{
@@ -332,6 +354,21 @@ namespace SDV
 						try
 						{
 							var newW = FuncAIP.CreateAgregateValue(h.OIck11, AgrCollect.ToList());
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Агрегирование");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+						}
+					}
+					else if(isDrH!=null)
+					{
+						try
+						{
+							var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrH);
 							OiHList.Remove(h);
 							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 							SdvList.Add(sdv);

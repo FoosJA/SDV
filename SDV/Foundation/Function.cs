@@ -532,11 +532,11 @@ namespace SDV.Foundation
 				//TODO: тут возможно придется менять
 				aavNew.valueFilterType = AggregationValueFilterType.all;
 				aavNew.schedule = AggregationSchedule.regular;
-				aavNew.regularPeriod = 60;
+				aavNew.regularPeriod = -60;
 				aavNew.Method = am;
-				aavNew.intermediateCalcStep = 3600;
+				//aavNew.intermediateCalcStep = 3600;
 				aavNew.inverse = drSource.Inv;
-				aavNew.queryStep = 0;
+				//aavNew.queryStep = 0;
 
 				aavNew.ParentObject = analog;
 				aavNew.Analog = analog;
