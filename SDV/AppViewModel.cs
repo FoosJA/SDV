@@ -140,7 +140,7 @@ namespace SDV
 						UidVal = av.Uid,
 						HISpartition = av.HISPartition.name,
 						ValueSource = av.MeasurementValueSource.name,
-						Class = nameClass.Remove(0, 3),
+						Class = nameClass,
 						MeasType = av.Analog.MeasurementType.name,
 						ValueType = av.MeasurementValueType.name
 					};
@@ -156,7 +156,8 @@ namespace SDV
 
 					if (oi.Id is null || oi.Id == String.Empty)
 					{
-						//TODO: Log($"Для ОИ не найден id: {oi.Name} uid={oi.UidVal}");
+						//TODO: 
+						Log($"Для ОИ не найден id: {oi.Name} uid={oi.UidVal}");
 					}
 					else
 					{
@@ -225,15 +226,26 @@ namespace SDV
 
 				if (isTransmit != null || h.OIck07.CategoryH == "Внешняя система" || h.OIck07.CategoryW == "Внешняя система")
 				{
-					var newW = FuncAIP.CreateRBvalue(h.OIck11);
+					try
+					{
+						var newW = FuncAIP.CreateRBvalue(h.OIck11);
+						OiHList.Remove(h);
+						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+						SdvList.Add(sdv);
+						Log($"Создано {newW.Id} RapidBus");
+					}
+					catch (Exception ex) { Log($"Ошибка создания RB значения {h.OIck11.Id}: {ex.Message}"); }
+				}
+				else if (h.OIck07.CategoryH == "Повтор за предыдущий цикл" || h.OIck07.CategoryW == "Повтор за предыдущий цикл")
+				{
+					OIck11 newW = FuncAIP.CreateRepeatedValue(h.OIck11);
 					OiHList.Remove(h);
 					SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 					SdvList.Add(sdv);
-					Log($"Создано {newW.Id} RapidBus");
+					Log($"Создано {newW.Id} Повторяемое");
 				}
 				else if (isDrW != null)
 				{
-					
 					try
 					{
 						OIck11 newW;
@@ -364,7 +376,7 @@ namespace SDV
 							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
 						}
 					}
-					else if(isDrH!=null)
+					else if (isDrH != null)
 					{
 						try
 						{
@@ -386,10 +398,13 @@ namespace SDV
 				}
 				else
 				{
-					Log($"Проверить! Ошибка создания   {h.OIck11.Id}");
+					Log($"Проверить! Ошибка создания {h.OIck11.Id}");
 				}
+				CurrentProgress++;
+				progress?.Report(CurrentProgress);
 
 			}
+			Log("Обработка завершена");
 
 		}
 

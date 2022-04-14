@@ -212,8 +212,8 @@ namespace SDV.Foundation
 				cavNew.Expression = (AnalogMeasurementExpression)ModelImage.CreateObject(ModelImage.MetaData.Classes["AnalogMeasurementExpression"]);
 				cavNew.Expression.definitionMethod = DefinitionMethod.internalFormula;
 				cavNew.allowOperatorInput = cv.AllowManual;
-
-				foreach (var operand in operands)
+				var t = operands.Distinct();
+				foreach (var operand in operands.Distinct().ToList<OperandFrm>())
 				{
 					MeasValueDirectOperand mvOperand = (MeasValueDirectOperand)ModelImage.CreateObject(ModelImage.MetaData.Classes["MeasValueDirectOperand"]);
 					//MeasValueOperand mvOperand = (MeasValueOperand)ModelImage.CreateObject(ModelImage.MetaData.Classes["MeasValueOperand"]);
@@ -562,6 +562,56 @@ namespace SDV.Foundation
 			{
 				ModelImage.RollbackTransaction();
 				throw new ArgumentException($"Не удалось создать агрегируемое значение {oi11.Id} в ИА: " + ex.Message);
+			}
+
+
+		}
+		public OIck11 CreateRepeatedValue(OIck11 oi11)
+		{
+			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
+			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ			
+
+			AnalogValue oiCk11 = (AnalogValue)ModelImage.GetObject(oi11.UidVal);
+			MetaClass MVSClass = ModelImage.MetaData.Classes["MeasurementValueSource"];
+			IEnumerable<MeasurementValueSource> mvsCollect = ModelImage.GetObjects(MVSClass).Cast<MeasurementValueSource>();
+			MeasurementValueSource mvs = mvsCollect.First(x => x.name.Equals("Расчет"));
+
+			try
+			{
+				ModelImage.BeginTransaction();
+				Analog analog = oiCk11.Analog;
+				RepeatedAnalogValue ravNew = (RepeatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["RepeatedAnalogValue"]);
+				ravNew.name = mvt.name;
+				ravNew.MeasurementValueType = mvt;
+
+				ravNew.fillTimeShift = 0;
+				ravNew.incrementUnit = RepeateIncrementUnit.number;
+				ravNew.incrementValue = 0;
+				
+				ravNew.ParentObject = analog;
+				ravNew.Analog = analog;
+				ravNew.externalId = "Agr" + oi11.Id.Replace('H', 'W');
+				ravNew.MeasurementValueSource = mvs;
+				ravNew.HISPartition = hISPartition;
+				ModelImage.CommitTransaction();
+				OIck11 oiRes = new OIck11
+				{
+					Name = ravNew.name,
+					UidMeas = ravNew.Analog.Uid,
+					UidVal = ravNew.Uid,
+					Id = oi11.Id.Replace('H', 'W'),
+					HISpartition = ravNew.HISPartition.name,
+					ValueSource = ravNew.MeasurementValueSource.name,
+					Class = "RepeatedAnalogValue",
+					MeasType = ravNew.Analog.MeasurementType.name,
+					ValueType = ravNew.MeasurementValueType.name
+				};
+				return oiRes;
+			}
+			catch (Exception ex)
+			{
+				ModelImage.RollbackTransaction();
+				throw new ArgumentException($"Не удалось создать повторяемое значение {oi11.Id} в ИА: " + ex.Message);
 			}
 
 
