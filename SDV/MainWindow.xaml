@@ -116,7 +116,15 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="5" Background="White">
                         <TextBlock  Background="WhiteSmoke" Text="Протокол" Foreground="DimGray" FontWeight="Bold"/>
-                        <ListBox  BorderThickness="0" ItemsSource="{Binding Path=InfoCollect,UpdateSourceTrigger=PropertyChanged }" IsSynchronizedWithCurrentItem="True">                          
+                        <ListBox  BorderThickness="0" ItemsSource="{Binding Path=InfoCollect,UpdateSourceTrigger=PropertyChanged }" IsSynchronizedWithCurrentItem="True">
+                            <ListBox.InputBindings>
+                                <KeyBinding Modifiers="Ctrl" Key="C" Command="{Binding CopyCommand}" CommandParameter="{Binding Path=InfoCollect}" />
+                            </ListBox.InputBindings>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding }"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
                             <ListBox.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Очистить" Command="{Binding ClearInfoCollect}"/>

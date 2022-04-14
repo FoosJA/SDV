@@ -28,6 +28,7 @@ namespace SDV.Foundation
 		/// <returns></returns>
 		public OIck11 CreateRBvalue(OIck11 oi)
 		{
+			string idW = oi.Id.Replace('H', 'W');
 			AnalogValue av = (AnalogValue)ModelImage.GetObject(oi.UidVal);
 			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
 			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
@@ -36,8 +37,8 @@ namespace SDV.Foundation
 			{
 				ModelImage.BeginTransaction();
 				var rapidBusVal = (RapidBusIndirectAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["RapidBusIndirectAnalogValue"]);
-				rapidBusVal.name = mvt.name + " [RB]";
-				rapidBusVal.externalId = "RB" + oi.Id.Replace('H', 'W');
+				rapidBusVal.name =$"{idW} {mvt.name}  [RB]";
+				rapidBusVal.externalId = "RB" + idW;
 				rapidBusVal.ParentObject = av.ParentObject;
 				rapidBusVal.Analog = av.Analog;
 				rapidBusVal.hisPreserveTime = true;
@@ -197,15 +198,15 @@ namespace SDV.Foundation
 			{
 				ModelImage.BeginTransaction();
 				CalculatedAnalogValue cavNew = null;
-
+				string idW = oi11.Id.Replace('H', 'W');
 				cavNew = (CalculatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["CalculatedAnalogValue"]);
 				cavNew.MeasurementValueType = mvt;
-				cavNew.name = mvt.name + " [Calc]";
+				cavNew.name = $"{idW} {mvt.name}  [Calc]"; 
 				cavNew.InterpolationParams = hCk11.InterpolationParams;
 				cavNew.schedule = CalculationSchedule.byChange;
 				cavNew.ParentObject = hCk11.Analog;
 				cavNew.Analog = hCk11.Analog;
-				cavNew.externalId = "Calc" + oi11.Id.Replace('H', 'W');
+				cavNew.externalId = "Calc" + idW;
 				cavNew.MeasurementValueSource = mvs;
 				cavNew.HISPartition = hISPartition;
 
@@ -255,7 +256,7 @@ namespace SDV.Foundation
 				txt = txt.Replace(@"%", @"*100/");
 				cavNew.Expression.formula = txt;
 				cavNew.Expression.ParentObject = cavNew;
-				cavNew.Expression.name = "Calc" + oi11.Id.Replace('H', 'W');
+				cavNew.Expression.name = idW;
 				ModelImage.CommitTransaction();
 				OIck11 oiRes = new OIck11
 				{
@@ -293,6 +294,8 @@ namespace SDV.Foundation
 				try
 				{
 					DiscreteForVal = (Discrete)ModelImage.GetObject(UidDiscreteForVal);
+					if (DiscreteForVal == null)
+						throw new ArgumentException($"Дискрет для создания операндов не найден в ИМ");
 				}
 				catch
 				{
@@ -323,6 +326,8 @@ namespace SDV.Foundation
 				try
 				{
 					AnalogForVal = (Analog)ModelImage.GetObject(UidAnalogForVal);
+					if (AnalogForVal==null)
+						throw new ArgumentException($"Аналог для создания операндов не найден в ИМ");
 				}
 				catch
 				{
@@ -358,6 +363,7 @@ namespace SDV.Foundation
 		/// <returns></returns>
 		public OIck11 CreateAgregateValue(OIck11 oi11, List<IntegParam> IntegParamCollect)
 		{
+			string idW = oi11.Id.Replace('H', 'W');
 			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
 			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ
 			IntegParam agregVal;
@@ -409,8 +415,9 @@ namespace SDV.Foundation
 			{
 				ModelImage.BeginTransaction();
 				Analog analog = oiCk11.Analog;
+				
 				AggregatedAnalogValue aavNew = (AggregatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["AggregatedAnalogValue"]);
-				aavNew.name = mvt.name + " [Agr]";
+				aavNew.name = $"{idW} {mvt.name}  [Agr]"; 
 				aavNew.Source = sourceAgreg;
 				aavNew.MeasurementValueType = mvt;
 				if (oiCk11 is ReplicatedAnalogValue rv)
@@ -513,12 +520,13 @@ namespace SDV.Foundation
 			MetaClass MVSClass = ModelImage.MetaData.Classes["MeasurementValueSource"];
 			IEnumerable<MeasurementValueSource> mvsCollect = ModelImage.GetObjects(MVSClass).Cast<MeasurementValueSource>();
 			MeasurementValueSource mvs = mvsCollect.First(x => x.name.Equals("Расчет"));
+			string idW = oi11.Id.Replace('H', 'W');
 			try
 			{
 				ModelImage.BeginTransaction();
 				Analog analog = oiCk11.Analog;
 				AggregatedAnalogValue aavNew = (AggregatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["AggregatedAnalogValue"]);
-				aavNew.name = mvt.name + " [Agr]";
+				aavNew.name = $"{idW} {mvt.name}  [Agr]";
 				aavNew.Source = sourceAgreg;
 				aavNew.MeasurementValueType = mvt;
 				/*if (oiCk11 is ReplicatedAnalogValue rv)
@@ -570,7 +578,7 @@ namespace SDV.Foundation
 		{
 			HISPartition hISPartition = (HISPartition)ModelImage.GetObject(new Guid("1000007D-0000-0000-C000-0000006D746C"));//Аналоговые 1 час
 			MeasurementValueType mvt = (MeasurementValueType)ModelImage.GetObject(new Guid("5F42143F-31CF-42FD-AD69-0BA60FE264B4"));//СДВ			
-
+			string idW = oi11.Id.Replace('H', 'W');
 			AnalogValue oiCk11 = (AnalogValue)ModelImage.GetObject(oi11.UidVal);
 			MetaClass MVSClass = ModelImage.MetaData.Classes["MeasurementValueSource"];
 			IEnumerable<MeasurementValueSource> mvsCollect = ModelImage.GetObjects(MVSClass).Cast<MeasurementValueSource>();
@@ -581,7 +589,7 @@ namespace SDV.Foundation
 				ModelImage.BeginTransaction();
 				Analog analog = oiCk11.Analog;
 				RepeatedAnalogValue ravNew = (RepeatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["RepeatedAnalogValue"]);
-				ravNew.name = mvt.name;
+				ravNew.name = $"{idW} [Rep]";;
 				ravNew.MeasurementValueType = mvt;
 
 				ravNew.fillTimeShift = 0;

@@ -343,7 +343,7 @@ namespace SDV
 						}
 					}
 				}
-				else if (h.OIck07.CategoryW == "Без заполнения" || h.OIck07.CategoryW == "Источник ПВ")
+				else if (h.OIck07.CategoryW == "Без заполнения" || h.OIck07.CategoryW == "Источник ПВ" || h.OIck07.CategoryW == "Обнуление")
 				{
 					//тогда делаем как H	
 					if (isCalcH != null)
@@ -452,6 +452,8 @@ namespace SDV
 				CreateCalcVal = settingstWindow.TriggerCalc;
 				CreateRepVal = settingstWindow.TriggerСreateRep;
 				FuncAIP.CreateRepVal = CreateRepVal;
+				FuncAIP.UidAnalogForVal = settingstWindow.GuidAnalog;
+				FuncAIP.UidDiscreteForVal = settingstWindow.GuidDiscrete;
 				Log("Настройки сохранены");
 			}
 		}
