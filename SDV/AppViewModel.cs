@@ -108,7 +108,7 @@ namespace SDV
 				BaseUrl = connectWindow.BaseUrl;
 				mImage = connectWindow.mImage;
 				dB = connectWindow.DataBase;
-				Log($"Подключение выполнено!");
+				
 			}
 			catch (Exception ex)
 			{

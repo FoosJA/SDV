@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:SDV"
         xmlns:filter="clr-namespace:DataGridFilterLibrary;assembly=DataGridFilterLibrary"
         mc:Ignorable="d"
+        Icon="/Resources/iconSDV.png"
         Loaded="Window_Loaded"
         Title="ЛСА формирования СДВ. Фоос Ю.А." Height="450" Width="800"
         x:Name="myWindow"
@@ -32,8 +33,8 @@
             <Button Content=" Стоп " Command="{Binding StopLoadDataCommand}" HorizontalAlignment="Right" />
         </ToolBar>
         <!--<local:UserControlSDV x:Name="Control" Grid.Row="1" />-->
-        <TabControl Grid.Row="2"  SelectedIndex="{Binding SelectItem}">
-            <TabItem Header="СВ 30 минут (H)">
+        <TabControl x:Name="tabControl" Grid.Row="2"  SelectedIndex="{Binding SelectItem}">
+            <TabItem x:Name="tabControl1" Header="СВ 30 минут (H)" IsSelected="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
@@ -87,7 +88,8 @@
                                 <RowDefinition/>
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
-                            <DataGrid Margin="5" ItemsSource="{Binding Path=SdvList, UpdateSourceTrigger=PropertyChanged}">
+                            <DataGrid Margin="5" ItemsSource="{Binding Path=SdvList, UpdateSourceTrigger=PropertyChanged}"
+                                      AutoGenerateColumns="False" IsReadOnly="True">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Binding="{Binding Path=H.Id}" Header="Id H"  Width="0.5*" />
                                     <DataGridTextColumn Binding="{Binding Path=H.UidMeas}" Header="UID H"  Width="0.5*" />
