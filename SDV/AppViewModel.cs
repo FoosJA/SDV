@@ -236,7 +236,8 @@ namespace SDV
 					}
 					catch (Exception ex) { Log($"Ошибка создания RB значения {h.OIck11.Id}: {ex.Message}"); }
 				}
-				else if (h.OIck07.CategoryH == "Повтор за предыдущий цикл" || h.OIck07.CategoryW == "Повтор за предыдущий цикл")
+				else if (h.OIck07.CategoryH == "Повтор за предыдущий цикл" || h.OIck07.CategoryW == "Повтор за предыдущий цикл" ||
+					h.OIck07.CategoryH == "Повтор значения в 0 часов" || h.OIck07.CategoryW == "Повтор значения в 0 часов")
 				{
 					OIck11 newW = FuncAIP.CreateRepeatedValue(h.OIck11);
 					OiHList.Remove(h);
