@@ -100,6 +100,7 @@ namespace SDV
 		public ICommand ConnectCommand { get { return new RelayCommand(ConnectExecute); } }
 		public void ConnectExecute()
 		{
+			//LoadingData = true;
 			ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };
 			try
 			{
@@ -213,11 +214,16 @@ namespace SDV
 		{
 			CurrentProgress = 0;
 			ProgressMax = SelectedHList.ToList().Count;
-
+			LoadingData = true;
 			Log("Обработка начата");
 			foreach (HalfHourMeas h in SelectedHList.ToArray())
 			{
 				await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+				if (token.IsCancellationRequested)
+				{
+					break;
+				}
+
 				var isTransmit = TransmitCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
 				var isAgregH = AgrCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == h.OIck07.Id);
 				var isAgregW = AgrCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == h.OIck07.Id.Replace('H', 'W'));
@@ -507,13 +513,58 @@ namespace SDV
 
 			}
 			Log("Обработка завершена");
-
+			LoadingData = false;
 		}
 
 
 		#endregion
 
 		#region Стандартные команды
+
+
+		public ICommand StopLoadDataCommand { get {
+				return new RelayCommand(StopLoadExecute, CanStopLoadData); 
+			} }
+		private bool CanStopLoadData()
+		{
+			return LoadingData;
+		}
+		public void StopLoad()
+		{
+			Log("Получена команда остановки.");
+			_tokenSource.Cancel();
+			_tokenSource = new CancellationTokenSource();
+		}
+		private void StopLoadExecute()
+		{
+			StopLoad();
+		}
+		private bool _compareModeIsActive = false;
+		public bool CompareModeIsActive
+		{
+			get => _compareModeIsActive;
+			set
+			{
+				_compareModeIsActive = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(CompareModeIsActiveAndNotLoadingData));
+			}
+		}
+		public bool NotLoadingData => !LoadingData;
+		public bool CompareModeIsActiveAndNotLoadingData => CompareModeIsActive && NotLoadingData;
+		private bool _loadingData;
+		public bool LoadingData
+		{
+			get => _loadingData;
+			private set
+			{
+				_loadingData = value;
+				RaisePropertyChanged();
+				RaisePropertyChanged(nameof(NotLoadingData));
+				RaisePropertyChanged(nameof(CompareModeIsActiveAndNotLoadingData));
+				CommandManager.InvalidateRequerySuggested();
+			}
+		}
 		public ICommand ClearInfoCollect { get { return new RelayCommand(ClearInfoExecute); } }
 		private void ClearInfoExecute() { InfoCollect.Clear(); }
 

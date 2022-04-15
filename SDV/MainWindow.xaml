@@ -24,9 +24,12 @@
             <MenuItem Header="Подключение" Command="{Binding ConnectCommand}"/>
             <MenuItem Header="Настройки" Command="{Binding SettingsCommand}"/>
         </Menu>
-        <ToolBar Grid.Row="1" VerticalAlignment="Center" Background="AliceBlue">
-            <Button Content=" 1. Создать W " Command="{Binding CreateCommand}"/>
+        <ToolBar Grid.Row="1" VerticalAlignment="Center" Background="AliceBlue">            
+            <Button Content=" 1. Создать W " Command="{Binding CreateCommand}" />
+            <Button Content=" 2. Записать архив " IsEnabled="False" />
+            <Button Content=" 3. Исправить привязку " IsEnabled="False" />
             <Separator/>
+            <Button Content=" Стоп " Command="{Binding StopLoadDataCommand}" HorizontalAlignment="Right" />
         </ToolBar>
         <!--<local:UserControlSDV x:Name="Control" Grid.Row="1" />-->
         <TabControl Grid.Row="2"  SelectedIndex="{Binding SelectItem}">
