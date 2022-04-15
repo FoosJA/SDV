@@ -371,6 +371,8 @@ namespace SDV.Foundation
 			try
 			{
 				agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == oi11.Id);
+				if(agregVal==null)
+					agregVal = IntegParamCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == idW);
 				idAgrerSource = agregVal.CategorySource + agregVal.IdSource;
 			}
 			catch
