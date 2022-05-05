@@ -107,8 +107,7 @@ namespace SDV
 				connectWindow.ShowDialog();
 				BaseUrl = connectWindow.BaseUrl;
 				mImage = connectWindow.mImage;
-				dB = connectWindow.DataBase;
-				
+				dB = connectWindow.DataBase;				
 			}
 			catch (Exception ex)
 			{
@@ -575,13 +574,14 @@ namespace SDV
 		public ICommand SettingsCommand { get { return new RelayCommand(SettingsExecute, CanCorrectSettings); } }
 		private bool CanCorrectSettings() { return mImage != null; }
 		public bool CreateRepVal { get; set; }
-		public bool CreateAgregVal { get; set; }
-		public bool CreateCalcVal { get; set; }
 		public Analog AnalogForVal { get; set; }
 		public Discrete DiscreteForVal { get; set; }
+		
+
+		public Guid AnalogUidView { get; set; }
 		public void SettingsExecute()
 		{
-			SettingsWindow settingstWindow = new SettingsWindow(CreateAgregVal, CreateCalcVal, CreateRepVal) { Owner = App.Current.MainWindow };
+			SettingsWindow settingstWindow = new SettingsWindow(FuncAIP.Prefix, CreateRepVal) { Owner = App.Current.MainWindow };
 			settingstWindow.ShowDialog();
 			if (settingstWindow.SaveChange)
 			{
@@ -601,8 +601,7 @@ namespace SDV
 				{
 					DiscreteForVal = (Discrete)mImage.GetObject(settingstWindow.GuidDiscrete);
 				}
-				CreateAgregVal = settingstWindow.TriggerAgreg;
-				CreateCalcVal = settingstWindow.TriggerCalc;
+				FuncAIP.Prefix = settingstWindow.NameOi;
 				CreateRepVal = settingstWindow.TriggerСreateRep;
 				FuncAIP.CreateRepVal = CreateRepVal;
 				FuncAIP.UidAnalogForVal = settingstWindow.GuidAnalog;

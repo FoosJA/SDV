@@ -25,39 +25,28 @@ namespace SDV
             InitializeComponent();
             ReadFileCon();
         }
-        public SettingsWindow(bool trigAgreg, bool trigCalc, bool trigRepValue)
+        public SettingsWindow(string nameOi, bool trigRepValue)
         {
             InitializeComponent();
             ReadFileCon();
-            TriggerAgreg = trigAgreg;
-            TriggerCalc = trigCalc;
             TriggerСreateRep = trigRepValue;
+            NameTextBox.Text = nameOi;
             AnalogTextBox.Text = GuidAnalog.ToString();
             DiscreteTextBox.Text = GuidDiscrete.ToString();
         }
 
-        private bool _triggerGreateOperand;
+        private bool _triggerCreateOperand;
         public bool TriggerСreateRep
         {
-            get { return _triggerGreateOperand; }
-            set { _triggerGreateOperand = value; checkBoxCreateRep.IsChecked = value; }
-        }
-        private bool _triggerAgreg;
-        public bool TriggerAgreg
-        {
-            get { return _triggerAgreg; }
-            set { _triggerAgreg = value; checkBoxAgreg.IsChecked = value; }
-        }
-        private bool _triggerCalc;
-        public bool TriggerCalc
-        {
-            get { return _triggerCalc; }
-            set { _triggerCalc = value; checkBoxCalc.IsChecked = value; }
-        }
+            get { return _triggerCreateOperand; }
+            set { _triggerCreateOperand = value; checkBoxCreateRep.IsChecked = value; }
+        }       
 
         public Guid GuidAnalog { get; set; }
 
         public Guid GuidDiscrete { get; set; }
+        public string NameOi { get; set; }
+
         public bool SaveChange = false;
 
 
@@ -92,6 +81,14 @@ namespace SDV
             }
             catch (FormatException) { };
         }
+        private void NameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                NameOi = NameTextBox.Text;
+            }
+            catch (FormatException) { };
+        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -117,7 +114,8 @@ namespace SDV
         private void SaveFileCon()
         {
             string text = $"Analog=;{GuidAnalog};" +
-                $"Discrete=;{GuidDiscrete};";
+                $"Discrete=;{GuidDiscrete};"+
+                 $"NameOi=;{NameOi};"                ;
             using (FileStream fstream = new FileStream(path, FileMode.OpenOrCreate))
             {
                 byte[] array = System.Text.Encoding.Default.GetBytes(text);
@@ -138,11 +136,14 @@ namespace SDV
                     {
                         GuidAnalog = new Guid(range[1]);
                         GuidDiscrete = new Guid(range[3]);
+						try { NameOi = range[5]; }
+						catch { NameOi = string.Empty; }
                     }
                     catch (System.FormatException)
                     {
                         GuidAnalog = Guid.Empty;
                         GuidDiscrete = Guid.Empty;
+                        NameOi = string.Empty;
                     }
                 }
             }
@@ -150,27 +151,8 @@ namespace SDV
             {
                 GuidAnalog = new Guid("B5D67D78-F557-4BCB-B2DD-5AC78E618930");
                 GuidDiscrete = new Guid("57E015D7-4A7C-4EC9-A0A5-B430F37D4A48");
+                NameOi = string.Empty;
             };
-        }
-
-        private void checkBoxAgreg_Checked(object sender, RoutedEventArgs e)
-        {
-            TriggerAgreg = true;
-        }
-
-        private void checkBoxAgreg_Unchecked(object sender, RoutedEventArgs e)
-        {
-            TriggerAgreg = false;
-        }
-
-        private void checkBoxCalc_Checked(object sender, RoutedEventArgs e)
-        {
-            TriggerCalc = true;
-        }
-
-        private void checkBoxCalc_Unchecked(object sender, RoutedEventArgs e)
-        {
-            TriggerCalc = false;
-        }
-    }
+        }		
+	}
 }
