@@ -71,6 +71,25 @@ namespace SDV
 			}
 		}
 
+		private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (_isInitialized)
+			{
+				var viewModel = (this.DataContext as AppViewModel);
+				if (viewModel != null)
+				{
+					viewModel.SelectedSdvList.Clear();
+					if (sender is DataGrid dg)
+					{
+						foreach (object item in dg.SelectedItems)
+						{
+							viewModel.SelectedSdvList.Add((SdvMeas)item);
+						}
+					}
+				}
+			}
+		}
+
 		/*   private void MenuItem_Click(object sender, RoutedEventArgs e)
            {
                ConnectWindow connectWindow = new ConnectWindow() { Owner = App.Current.MainWindow };

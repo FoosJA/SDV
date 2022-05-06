@@ -199,17 +199,19 @@ namespace SDV
 				Log($"Готово!");
 			}
 		}
-
-		public ICommand CreateCommand { get { return new RelayCommand(LoadExecute, CanCreate); } }
+		/// <summary>
+		/// Создание часового параметра
+		/// </summary>
+		public ICommand CreateCommand { get { return new RelayCommand(CreateExecute, CanCreate); } }
 
 		private bool CanCreate() { return SelectedH != null && SelectItem == TabItems.H; ; }
-		async void LoadExecute()
+		async void CreateExecute()
 		{
 			var progress = new Progress<int>();
 			progress.ProgressChanged += ((sender, e) => { CurrentProgress = e; });
-			await LoadAsync(_tokenSource.Token, progress);
+			await CreateAsync(_tokenSource.Token, progress);
 		}
-		async Task LoadAsync(CancellationToken token = default, IProgress<int> progress = null)
+		async Task CreateAsync(CancellationToken token = default, IProgress<int> progress = null)
 		{
 			CurrentProgress = 0;
 			ProgressMax = SelectedHList.ToList().Count;
@@ -514,7 +516,18 @@ namespace SDV
 			Log("Обработка завершена");
 			LoadingData = false;
 		}
+		/// <summary>
+		/// Запрос архива из СК-2007
+		/// </summary>
+		public ICommand GetArhiveCommand { get { return new RelayCommand(GetArhiveExecute, CanGetArhive); } }
 
+		private bool CanGetArhive() { return SelectedSdv != null ; }
+
+		public void GetArhiveExecute()
+		{
+
+
+		}
 
 		#endregion
 
