@@ -52,15 +52,54 @@ namespace SDV
 		public SdvMeas SelectedSdv
 		{
 			get { return _selectedSdv; }
-			set { _selectedSdv = value;
+			set
+			{
+				_selectedSdv = value;
 				MeasValueH = SelectedSdv.W.MeasValueList;
-				RaisePropertyChanged(); }
+				RaisePropertyChanged();
+			}
 		}
 		private ObservableCollection<SdvMeas> _sdvList = new ObservableCollection<SdvMeas>();
 		public ObservableCollection<SdvMeas> SdvList
 		{
 			get { return _sdvList; }
 			set { _sdvList = value; RaisePropertyChanged(); }
+		}
+		private DateTime _startTime = DateTime.Now.Date.AddDays(-1);
+		public string StartTimeStr
+		{
+			get { return _startTime.ToString("f"); }
+			set
+			{
+				try
+				{
+					_startTime = Convert.ToDateTime(value);
+					RaisePropertyChanged();
+				}
+				catch (Exception ex)
+				{
+					Log("Некорректная дата " + ex.Message);
+				}
+
+			}
+		}
+		private DateTime _endTime = DateTime.Now.Date;
+		public string EndTimeStr
+		{
+			get { return _endTime.ToString("f"); }
+			set
+			{
+				try
+				{
+					_endTime = Convert.ToDateTime(value);
+					RaisePropertyChanged();
+				}
+				catch (Exception ex)
+				{
+					Log("Некорректная дата " + ex.Message);
+				}
+
+			}
 		}
 
 		/// <summary>
@@ -115,7 +154,7 @@ namespace SDV
 				connectWindow.ShowDialog();
 				BaseUrl = connectWindow.BaseUrl;
 				mImage = connectWindow.mImage;
-				dB = connectWindow.DataBase;				
+				dB = connectWindow.DataBase;
 			}
 			catch (Exception ex)
 			{
@@ -206,7 +245,7 @@ namespace SDV
 				OiHList = new ObservableCollection<HalfHourMeas>(twoMeasCollect);
 				Log($"Готово!");
 			}
-			
+
 		}
 		/// <summary>
 		/// Создание часового параметра
@@ -351,7 +390,7 @@ namespace SDV
 							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
 						}
 					}
-						
+
 				}
 				else if (h.OIck07.CategoryW == "Дорасчет")
 				{
@@ -492,14 +531,14 @@ namespace SDV
 						catch (Exception ex)
 						{
 							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
-						}						
+						}
 					}
 					else
 					{
 						Log($"Проверить! Ошибка создания  {h.OIck11.Id}");
 					}
 				}
-				else if (h.OIck07.CategoryH=="Обнуление")
+				else if (h.OIck07.CategoryH == "Обнуление")
 				{
 					try
 					{
@@ -513,7 +552,7 @@ namespace SDV
 					{
 						Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
 					}
-				}	
+				}
 				else
 				{
 					Log($"Проверить! Ошибка создания {h.OIck11.Id}");
@@ -530,13 +569,30 @@ namespace SDV
 		/// </summary>
 		public ICommand GetArhiveCommand { get { return new RelayCommand(GetArhiveExecute, CanGetArhive); } }
 
-		private bool CanGetArhive() { return SelectedSdv != null ; }
+		private bool CanGetArhive() { return SelectedSdv != null; }
 
 		public void GetArhiveExecute()
 		{
-			DateTime dtStart = Convert.ToDateTime("05/02/2022 09:00");
-			DateTime dtEnd = Convert.ToDateTime("05/02/2022 12:00");
-			dB.GetValueOI(dtStart, dtEnd, SelectedSdvList);
+			if(_startTime>_endTime)
+			{
+				Log("Некорректный интервал времени");				
+			}
+			else
+			{
+				DateTime dtStart = Convert.ToDateTime(_startTime.ToString("s"));
+				DateTime dtEnd = Convert.ToDateTime(_endTime.ToString("s"));
+				try
+				{
+					foreach(var sdv in SelectedSdvList)
+					{
+						dB.GetValueOI(dtStart, dtEnd, sdv);
+						Log($"Архив {sdv.H.Id} запрошен"); ;
+					}					
+				}
+				catch (Exception ex)
+				{ Log("Ошибка запроса архива: " + ex.Message); }
+			}
+			
 
 		}
 
@@ -545,9 +601,13 @@ namespace SDV
 		#region Стандартные команды
 
 
-		public ICommand StopLoadDataCommand { get {
-				return new RelayCommand(StopLoadExecute, CanStopLoadData); 
-			} }
+		public ICommand StopLoadDataCommand
+		{
+			get
+			{
+				return new RelayCommand(StopLoadExecute, CanStopLoadData);
+			}
+		}
 		private bool CanStopLoadData()
 		{
 			return LoadingData;
@@ -594,13 +654,13 @@ namespace SDV
 		public ICommand CopyCommand { get { return new RelayCommand(CopyUidTempExecute); } }
 
 		private void CopyUidTempExecute() { Clipboard.SetText(SelectedH.OIck11.UidVal.ToString()); }
-		
+
 		public ICommand SettingsCommand { get { return new RelayCommand(SettingsExecute, CanCorrectSettings); } }
 		private bool CanCorrectSettings() { return mImage != null; }
 		public bool CreateRepVal { get; set; }
 		public Analog AnalogForVal { get; set; }
 		public Discrete DiscreteForVal { get; set; }
-		
+
 
 		public Guid AnalogUidView { get; set; }
 		public void SettingsExecute()

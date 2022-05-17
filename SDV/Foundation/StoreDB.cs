@@ -125,13 +125,9 @@ SELECT  [ID]
 
 		#endregion
 
-		public void GetValueOI(DateTime dateStart, DateTime dateEnd, IEnumerable<SdvMeas> sdvList)
+		public void GetValueOI(DateTime dateStart, DateTime dateEnd, SdvMeas sdv)
 		{
-			string ids = "";
-			foreach (var sdv in sdvList)
-			{
-				ids += sdv.H.Id.Remove(0, 1);
-			}
+			string ids = sdv.H.Id.Remove(0, 1);			
 			var strBuilder = new SqlConnectionStringBuilder()
 			{
 				DataSource = serverName,
@@ -163,20 +159,19 @@ SELECT  [ID]
 				command.Parameters["@Step"].SqlValue = 0;
 				command.Parameters["@ShowSystemTime"].SqlValue = 1;
 				command.Parameters["@ResultForReports"].SqlValue = 1;
-
 				try
 				{
 					SqlDataReader dataReader_oic = command.ExecuteReader();
 					while (dataReader_oic.Read())
 					{
+
 						var measValue = new MeasValue
 						{
 							Value = Convert.ToDouble(dataReader_oic["Value"]),
 							Date = Convert.ToDateTime(dataReader_oic["TimeLt"]),
 							QualityCode = Convert.ToInt32(dataReader_oic["QC"])
 						};
-						var id = Convert.ToString(dataReader_oic["ID"]);
-						var sdv = sdvList.Single(x => x.H.Id == "H" + id);
+						var id = Convert.ToInt32(dataReader_oic["id"]);
 						sdv.W.MeasValueList.Add(measValue);
 					}
 					dataReader_oic.Close();
@@ -187,6 +182,7 @@ SELECT  [ID]
 				}
 			}
 		}
+		 
 		public ObservableCollection<OIck07> GetAllOI()
 		{
 			var query = SDVQuery;
