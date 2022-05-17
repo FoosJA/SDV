@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace SDV.Model
 {
@@ -8,6 +11,7 @@ namespace SDV.Model
        
         public string Name { get; set; }
         public string Id { get; set; }
+        private ObservableCollection<MeasValue> _measValList = new ObservableCollection<MeasValue>();
         ///// <summary>
         ///// какой-то тип
         ///// </summary>
@@ -15,7 +19,16 @@ namespace SDV.Model
         /// <summary>
         /// Значения измерений
         /// </summary>
-        public IEnumerable<MeasValue> MeasValueList { get; set; }
+        public ObservableCollection<MeasValue> MeasValueList
+        {
+            get { return _measValList; }
+            set { _measValList = value; RaisePropertyChanged(); }
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void RaisePropertyChanged([CallerMemberName] string name = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
     }
 
     public class OIck11: IOperInfo
@@ -58,9 +71,9 @@ namespace SDV.Model
 
     public class MeasValue
     {
-        public int QualityCode;
-        public double Value;
-        public DateTime Date;
+        public int QualityCode { get; set; }
+        public double Value { get; set; }
+        public DateTime Date { get; set; }
     }
 
 }

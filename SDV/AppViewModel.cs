@@ -33,6 +33,12 @@ namespace SDV
 			get { return _selectedH; }
 			set { _selectedH = value; RaisePropertyChanged(); }
 		}
+		private ObservableCollection<MeasValue> _measValueH;
+		public ObservableCollection<MeasValue> MeasValueH
+		{
+			get { return _measValueH; }
+			set { _measValueH = value; RaisePropertyChanged(); }
+		}
 		private ObservableCollection<HalfHourMeas> _oiHList = new ObservableCollection<HalfHourMeas>();
 		public ObservableCollection<HalfHourMeas> OiHList
 		{
@@ -46,7 +52,9 @@ namespace SDV
 		public SdvMeas SelectedSdv
 		{
 			get { return _selectedSdv; }
-			set { _selectedSdv = value; RaisePropertyChanged(); }
+			set { _selectedSdv = value;
+				MeasValueH = SelectedSdv.W.MeasValueList;
+				RaisePropertyChanged(); }
 		}
 		private ObservableCollection<SdvMeas> _sdvList = new ObservableCollection<SdvMeas>();
 		public ObservableCollection<SdvMeas> SdvList
@@ -157,7 +165,7 @@ namespace SDV
 					if (oi.Id is null || oi.Id == String.Empty)
 					{
 						//TODO: 
-						Log($"Для ОИ не найден id: {oi.Name} uid={oi.UidVal}");
+						//Log($"Для ОИ не найден id: {oi.Name} uid={oi.UidVal}");
 					}
 					else
 					{
@@ -198,6 +206,7 @@ namespace SDV
 				OiHList = new ObservableCollection<HalfHourMeas>(twoMeasCollect);
 				Log($"Готово!");
 			}
+			
 		}
 		/// <summary>
 		/// Создание часового параметра
@@ -525,7 +534,9 @@ namespace SDV
 
 		public void GetArhiveExecute()
 		{
-
+			DateTime dtStart = Convert.ToDateTime("05/02/2022 09:00");
+			DateTime dtEnd = Convert.ToDateTime("05/02/2022 12:00");
+			dB.GetValueOI(dtStart, dtEnd, SelectedSdvList);
 
 		}
 
