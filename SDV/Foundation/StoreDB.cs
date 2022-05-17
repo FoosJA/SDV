@@ -156,7 +156,7 @@ SELECT  [ID]
 				command.Parameters["@StartIsSummer"].SqlValue = 1;
 				command.Parameters["@Stop"].SqlValue = dateEnd; 
 				command.Parameters["@StopIsSummer"].SqlValue = 0;
-				command.Parameters["@Step"].SqlValue = 0;
+				command.Parameters["@Step"].SqlValue = 3600;
 				command.Parameters["@ShowSystemTime"].SqlValue = 1;
 				command.Parameters["@ResultForReports"].SqlValue = 1;
 				try

@@ -6,10 +6,6 @@
         xmlns:local="clr-namespace:SDV"
         xmlns:filter="clr-namespace:DataGridFilterLibrary;assembly=DataGridFilterLibrary"
         xmlns:xceed="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
-        xmlns:themes="clr-namespace:Xceed.Wpf.Toolkit.Themes"
-        xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes"
-        xmlns:conv="clr-namespace:Xceed.Wpf.Toolkit.Core.Converters"
-        xmlns:dateConv="clr-namespace:Xceed.Wpf.Toolkit.Converters"
         d:DataContext="{d:DesignInstance Type=local:AppViewModel}"
         mc:Ignorable="d"
         Icon="/Resources/iconSDV.png"
@@ -34,7 +30,8 @@
         </Menu>
         <ToolBar Grid.Row="1" VerticalAlignment="Center" Background="AliceBlue">            
             <Button Content=" 1. Создать W " Command="{Binding CreateCommand}" />
-            <Button Content=" 2. Записать архив " IsEnabled="False" />
+            <Button Content=" 2. Записать архив "
+                    Command="{Binding WriteCommand}"/>
             <Button Content=" 3. Исправить привязку " IsEnabled="False" />
             <Separator/>
             <Button Content=" Стоп " Command="{Binding StopLoadDataCommand}" />
@@ -129,7 +126,7 @@
                                 <RowDefinition/>
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
-                            <DataGrid Margin="5" ItemsSource="{Binding Path=SdvList, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGrid x:Name="sdvGrid" Margin="5" ItemsSource="{Binding Path=SdvList, UpdateSourceTrigger=PropertyChanged}"
                                       AutoGenerateColumns="False"
                                       IsReadOnly="True"
                                       SelectionMode="Extended"
@@ -147,6 +144,11 @@
                                 </DataGrid.Columns>
 
                             </DataGrid>
+                            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                            <Label>Количество строк:</Label>
+                                <Label  Content="{Binding ElementName=sdvGrid, Path=Items.Count, UpdateSourceTrigger=PropertyChanged}"></Label>
+                            </StackPanel>
+
                         </Grid>
                     </GroupBox>
                     <GroupBox Grid.Column="2" Grid.Row="1" Header="Измерения в архив" Grid.RowSpan="2">
@@ -155,19 +157,26 @@
                                 <RowDefinition/>
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
-                            <DataGrid Margin="15"
+                            <DataGrid x:Name="valueGrid" Margin="15"
                                       ItemsSource="{Binding Path=MeasValueH, UpdateSourceTrigger=PropertyChanged}"
                                       AutoGenerateColumns="False"
-                                      IsReadOnly="True">
+                                      IsReadOnly="True"
+                                      SelectionMode="Extended">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Binding="{Binding Path=Value}"
-                                                        Header="Значение"
-                                                        Width="0.5*" />
                                     <DataGridTextColumn Binding="{Binding Path=Date, StringFormat= '{}{0:dd.MM.yyyy HH:mm:ss}'}"
                                                         Header="Дата"
-                                                        Width="0.5*" />
+                                                        Width="*" />
+                                    <DataGridTextColumn Binding="{Binding Path=Value}"
+                                                        Header="Значение"
+                                                        Width="*" />
+                                    
                                 </DataGrid.Columns>
                             </DataGrid>
+                            <StackPanel Orientation="Horizontal"
+                                        Grid.Row="1">
+                                <Label>Количество строк:</Label>
+                                <Label  Content="{Binding ElementName=valueGrid, Path=Items.Count, UpdateSourceTrigger=PropertyChanged}"></Label>
+                            </StackPanel>
                         </Grid>
                     </GroupBox>
 

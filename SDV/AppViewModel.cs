@@ -16,14 +16,14 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using measValAPI = SDV.Foundation.MeasurementValueAPI;
 using MeasurementValue = Monitel.Mal.Context.CIM16.MeasurementValue;
-
+using static SDV.API.APIrequests;
 
 namespace SDV
 {
 	class AppViewModel : AppViewModelBase
 	{
 		#region свойства
-		APIrequests.TokenResponse TokenRead { get; set; }
+		
 
 		public List<HalfHourMeas> SelectedHList = new List<HalfHourMeas>();
 
@@ -573,9 +573,9 @@ namespace SDV
 
 		public void GetArhiveExecute()
 		{
-			if(_startTime>_endTime)
+			if (_startTime > _endTime)
 			{
-				Log("Некорректный интервал времени");				
+				Log("Некорректный интервал времени");
 			}
 			else
 			{
@@ -583,17 +583,47 @@ namespace SDV
 				DateTime dtEnd = Convert.ToDateTime(_endTime.ToString("s"));
 				try
 				{
-					foreach(var sdv in SelectedSdvList)
+					foreach (var sdv in SelectedSdvList)
 					{
+						sdv.W.MeasValueList.Clear();
 						dB.GetValueOI(dtStart, dtEnd, sdv);
-						Log($"Архив {sdv.H.Id} запрошен"); ;
-					}					
+						
+					}
 				}
 				catch (Exception ex)
 				{ Log("Ошибка запроса архива: " + ex.Message); }
 			}
-			
+		}
 
+		public ICommand WriteCommand { get { return new RelayCommand(WriteArhiveExecute, CanWriteArhive); } }
+
+		private bool CanWriteArhive() { return SelectedSdv != null; }
+
+		public void WriteArhiveExecute()
+		{
+			TokenResponse tokenRead;
+			try
+			{
+				tokenRead = GetToken(BaseUrl).Result;
+
+			}
+			catch (Exception ex)
+			{
+				throw new ArgumentException("Ошибка подключения по web-ep ");
+			}
+			foreach (var sdv in SelectedSdvList)
+			{
+				if (sdv.W.MeasValueList.Count != 0)
+				{
+					try
+					{
+						ToWrite(tokenRead, BaseUrl, sdv.W);
+						Log($"Архив {sdv.W.Id} записан за {sdv.W.MeasValueList.First().Date} - {sdv.W.MeasValueList.Last().Date}"); 
+					}
+					catch(Exception ex)
+					{ Log($"Ошибка записи {sdv.W.Id}: " + ex.Message); }
+				}
+			}
 		}
 
 		#endregion
