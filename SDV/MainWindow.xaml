@@ -138,11 +138,16 @@
                                       ColumnHeaderStyle="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type filter:DataGridHeaderFilterControl}, ResourceId=DataGridHeaderFilterControlStyle}}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Binding="{Binding Path=H.Id}" Header="Id H"  Width="0.5*" />
-                                    <DataGridTextColumn Binding="{Binding Path=H.UidMeas}" Header="UID H"  Width="0.5*" />
+                                    <DataGridTextColumn Binding="{Binding Path=H.UidVal}" Header="UID H"  Width="0.5*" />
                                     <DataGridTextColumn Binding="{Binding Path=W.Id}" Header="Id W"  Width="0.5*" />
-                                    <DataGridTextColumn Binding="{Binding Path=W.UidMeas}" Header="UID W"  Width="0.5*" />
+                                    <DataGridTextColumn Binding="{Binding Path=W.UidVal}" Header="UID W"  Width="0.5*" />
                                 </DataGrid.Columns>
-
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Копировать Uid"
+                                                  Command="{Binding CopyCommandSdv}"></MenuItem>
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
                             </DataGrid>
                             <StackPanel Orientation="Horizontal" Grid.Row="1">
                             <Label>Количество строк:</Label>

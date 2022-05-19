@@ -684,6 +684,9 @@ namespace SDV
 		public ICommand CopyCommand { get { return new RelayCommand(CopyUidTempExecute); } }
 
 		private void CopyUidTempExecute() { Clipboard.SetText(SelectedH.OIck11.UidVal.ToString()); }
+		public ICommand CopyCommandSdv { get { return new RelayCommand(CopyUidSDVTempExecute); } }
+
+		private void CopyUidSDVTempExecute() { Clipboard.SetText(SelectedSdv.W.UidVal.ToString()); }
 
 		public ICommand SettingsCommand { get { return new RelayCommand(SettingsExecute, CanCorrectSettings); } }
 		private bool CanCorrectSettings() { return mImage != null; }
