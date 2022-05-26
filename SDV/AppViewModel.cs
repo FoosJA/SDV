@@ -295,28 +295,122 @@ namespace SDV
 				else if (h.OIck07.CategoryH == "Повтор за предыдущий цикл" || h.OIck07.CategoryW == "Повтор за предыдущий цикл" ||
 					h.OIck07.CategoryH == "Повтор значения в 0 часов" || h.OIck07.CategoryW == "Повтор значения в 0 часов")
 				{
-					OIck11 newW = FuncAIP.CreateRepeatedValue(h.OIck11);
-					OiHList.Remove(h);
-					SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
-					SdvList.Add(sdv);
-					Log($"Создано {newW.Id} Повторяемое");
+					if (isCalcH != null)
+					{
+						try
+						{
+							var newW = FuncAIP.CreateCalcvalue(h.OIck11, 'H', CalcValues, OperandCollect);
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Дорасчёт");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+						}
+					}
+					else if (isAgregH != null)
+					{
+						try
+						{
+							var newW = FuncAIP.CreateAgregateValue(h.OIck11, AgrCollect.ToList());
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Агрегирование");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+						}
+					}
+					else if (isDrH != null)
+					{
+						try
+						{
+							var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrH);
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Агрегирование");
+						}
+						catch (Exception ex)
+						{
+							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+						}
+					}
+					else {
+						OIck11 newW = FuncAIP.CreateRepeatedValue(h.OIck11);
+						OiHList.Remove(h);
+						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+						SdvList.Add(sdv);
+						Log($"Создано {newW.Id} Повторяемое");
+					};
+					
 				}
 
 				else if (isDrW != null)
 				{
 					try
 					{
-						OIck11 newW;
 						if (isDrW.IdSource == isDrW.Id.Replace('W', 'H'))
 						{
-							newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrH);
+							if (isCalcH != null)
+							{
+								try
+								{
+									var newW = FuncAIP.CreateCalcvalue(h.OIck11, 'H', CalcValues, OperandCollect);
+									OiHList.Remove(h);
+									SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+									SdvList.Add(sdv);
+									Log($"Создано {newW.Id} Дорасчёт");
+								}
+								catch (Exception ex)
+								{
+									Log($"Ошибка создания дорасчёта для {h.OIck11.Id}: {ex.Message}");
+								}
+							}
+							else if (isAgregH != null)
+							{
+								try
+								{
+									var newW = FuncAIP.CreateAgregateValue(h.OIck11, AgrCollect.ToList());
+									OiHList.Remove(h);
+									SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+									SdvList.Add(sdv);
+									Log($"Создано {newW.Id} Агрегирование");
+								}
+								catch (Exception ex)
+								{
+									Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+								}
+							}
+							else if (isDrH != null)
+							{
+								try
+								{
+									var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrH);
+									OiHList.Remove(h);
+									SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+									SdvList.Add(sdv);
+									Log($"Создано {newW.Id} Агрегирование");
+								}
+								catch (Exception ex)
+								{
+									Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
+								}
+							}
+							else { Log($"Проверить! Ошибка создания  {h.OIck11.Id}"); }
 						}
 						else
-						{ newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW); }
-						OiHList.Remove(h);
-						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
-						SdvList.Add(sdv);
-						Log($"Создано {newW.Id} Агрегирование");
+						{  var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW);
+							OiHList.Remove(h);
+							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+							SdvList.Add(sdv);
+							Log($"Создано {newW.Id} Агрегирование");
+						}
+						
 					}
 					catch (Exception ex)
 					{
