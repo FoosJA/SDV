@@ -38,7 +38,7 @@ namespace SDV.Foundation
 			{
 				ModelImage.BeginTransaction();
 				var rapidBusVal = (RapidBusIndirectAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["RapidBusIndirectAnalogValue"]);
-				rapidBusVal.name = $"{Prefix} {idW} {mvt.name}  [RB]";
+				rapidBusVal.name = $"{Prefix}{idW} {mvt.name}  [RB]";
 				rapidBusVal.externalId = "RB" + idW;
 				rapidBusVal.ParentObject = av.ParentObject;
 				rapidBusVal.Analog = av.Analog;
@@ -202,7 +202,7 @@ namespace SDV.Foundation
 				string idW = oi11.Id.Replace('H', 'W');
 				cavNew = (CalculatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["CalculatedAnalogValue"]);
 				cavNew.MeasurementValueType = mvt;
-				cavNew.name = $"{Prefix} {idW} {mvt.name}  [Calc]";
+				cavNew.name = $"{Prefix}{idW} {mvt.name}  [Calc]";
 				cavNew.InterpolationParams = hCk11.InterpolationParams;
 				cavNew.schedule = CalculationSchedule.byChange;
 				cavNew.ParentObject = hCk11.Analog;
@@ -420,7 +420,7 @@ namespace SDV.Foundation
 				Analog analog = oiCk11.Analog;
 
 				AggregatedAnalogValue aavNew = (AggregatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["AggregatedAnalogValue"]);
-				aavNew.name = $"{Prefix} {idW} {mvt.name}  [Agr]";
+				aavNew.name = $"{Prefix}{idW} {mvt.name}  [Agr]";
 				aavNew.Source = sourceAgreg;
 				aavNew.MeasurementValueType = mvt;
 				if (oiCk11 is ReplicatedAnalogValue rv)
@@ -529,7 +529,7 @@ namespace SDV.Foundation
 				ModelImage.BeginTransaction();
 				Analog analog = oiCk11.Analog;
 				AggregatedAnalogValue aavNew = (AggregatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["AggregatedAnalogValue"]);
-				aavNew.name = $"{Prefix} {idW} {mvt.name}  [Agr]";
+				aavNew.name = $"{Prefix}{idW} {mvt.name}  [Agr]";
 				aavNew.Source = sourceAgreg;
 				aavNew.MeasurementValueType = mvt;
 				/*if (oiCk11 is ReplicatedAnalogValue rv)
@@ -592,7 +592,7 @@ namespace SDV.Foundation
 				ModelImage.BeginTransaction();
 				Analog analog = oiCk11.Analog;
 				RepeatedAnalogValue ravNew = (RepeatedAnalogValue)ModelImage.CreateObject(ModelImage.MetaData.Classes["RepeatedAnalogValue"]);
-				ravNew.name = $"{Prefix} {idW} [Rep]";
+				ravNew.name = $"{Prefix}{idW} [Rep]";
 				ravNew.MeasurementValueType = mvt;
 
 				ravNew.fillTimeShift = 0;

@@ -23,7 +23,7 @@ namespace SDV
 	class AppViewModel : AppViewModelBase
 	{
 		#region свойства
-		
+		public bool isRapidBus=true; //Для ОДУ
 
 		public List<HalfHourMeas> SelectedHList = new List<HalfHourMeas>();
 
@@ -139,6 +139,15 @@ namespace SDV
 		}
 		#endregion
 
+		private string GetRoot(Guid poUid)
+		{
+			var obj = (IdentifiedObject)mImage.GetObject(poUid);
+			if (obj.ParentObject.Uid == new Guid("00000001-0000-0000-C000-0000006D746C"))
+			{
+				return obj.name;
+			}
+			return GetRoot(obj.ParentObject.Uid);
+		}
 
 		#region Команды
 		/// <summary>
@@ -160,91 +169,105 @@ namespace SDV
 			{
 				Log($"Ошибка: {ex.Message}");
 			}
-
-			if (mImage != null)
+			try
 			{
-				OiHList.Clear();
-				FuncAIP = new Function(mImage, CreateRepVal);
-				MetaClass hisClass = mImage.MetaData.Classes["HISPartition"];
-				IEnumerable<HISPartition> hisCollect = mImage.GetObjects(hisClass).Cast<HISPartition>();
-				var hisH = hisCollect.First(x => x.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C"));//Аналоговые 1 ч и 30 минут
-				var hisW = hisCollect.First(x => x.Uid == new Guid("1000007D-0000-0000-C000-0000006D746C"));
-
-				MetaClass avClass = mImage.MetaData.Classes["AnalogValue"];
-				IEnumerable<AnalogValue> avCollect = mImage.GetObjects(avClass).Cast<AnalogValue>();
-
-				List<OIck11> oi11List = new List<OIck11>();
-				ObservableCollection<AnalogValue> sdvAvList = new ObservableCollection<AnalogValue>(avCollect.Where(x =>
-				(x.HISPartition == hisH) || (x.HISPartition == hisW)));
-				foreach (AnalogValue av in sdvAvList)
+				if (mImage != null)
 				{
-					MemberInfo[] memberArray = av.GetType().GetMembers();
-					string nameClass = memberArray[0].DeclaringType.Name;
-					OIck11 oi = new OIck11
-					{
-						Name = av.name,
-						UidMeas = av.Analog.Uid,
-						UidVal = av.Uid,
-						HISpartition = av.HISPartition.name,
-						ValueSource = av.MeasurementValueSource.name,
-						Class = nameClass,
-						MeasType = av.Analog.MeasurementType.name,
-						ValueType = av.MeasurementValueType.name
-					};
+					OiHList.Clear();
+					FuncAIP = new Function(mImage, CreateRepVal);
+					MetaClass hisClass = mImage.MetaData.Classes["HISPartition"];
+					IEnumerable<HISPartition> hisCollect = mImage.GetObjects(hisClass).Cast<HISPartition>();
+					var hisH = hisCollect.First(x => x.Uid == new Guid("1000007B-0000-0000-C000-0000006D746C"));//Аналоговые 1 ч и 30 минут
+					var hisW = hisCollect.First(x => x.Uid == new Guid("1000007D-0000-0000-C000-0000006D746C"));
 
-					if (av is ReplicatedAnalogValue avRep)
+					MetaClass avClass = mImage.MetaData.Classes["AnalogValue"];
+					IEnumerable<AnalogValue> avCollect = mImage.GetObjects(avClass).Cast<AnalogValue>();
+
+					List<OIck11> oi11List = new List<OIck11>();
+					ObservableCollection<AnalogValue> sdvAvList = new ObservableCollection<AnalogValue>(avCollect.Where(x =>
+					(x.HISPartition == hisH) || (x.HISPartition == hisW)));
+					foreach (AnalogValue av in sdvAvList)
 					{
-						oi.Id = avRep.sourceId;
-					}
-					else
-					{
-						oi.Id = av.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "");
+						MemberInfo[] memberArray = av.GetType().GetMembers();
+						string nameClass = memberArray[0].DeclaringType.Name;
+						var root = GetRoot(av.Analog.ParentObject.Uid);
+						OIck11 oi = new OIck11
+						{
+							Name = av.name,
+							UidMeas = av.Analog.Uid,
+							UidVal = av.Uid,
+							HISpartition = av.HISPartition.name,
+							ValueSource = av.MeasurementValueSource.name,
+							Class = nameClass,
+							MeasType = av.Analog.MeasurementType.name,
+							RootName=root,
+							ValueType = av.MeasurementValueType.name
+						};
+
+						if (av is ReplicatedAnalogValue avRep)
+						{
+							oi.Id = avRep.sourceId;
+						}
+						else
+						{
+							oi.Id = av.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "");
+						}
+
+						if (oi.Id is null || oi.Id == String.Empty)
+						{
+							//TODO: 
+							//Log($"Для ОИ не найден id: {oi.Name} uid={oi.UidVal}");
+						}
+						else
+						{
+							oi11List.Add(oi);
+						}
 					}
 
-					if (oi.Id is null || oi.Id == String.Empty)
-					{
-						//TODO: 
-						//Log($"Для ОИ не найден id: {oi.Name} uid={oi.UidVal}");
-					}
-					else
-					{
-						oi11List.Add(oi);
-					}
-				}
+					var sdvCollect = from h in oi11List.Where(x => x.HISpartition == hisH.name)
+									 join w in oi11List.Where(x => x.HISpartition == hisW.name) on new { h.UidMeas, V = h.Id.Remove(0, 1) } equals new { w.UidMeas, V = w.Id.Remove(0, 1) } into gj
+									 from subnet in gj.DefaultIfEmpty()
+									 select new SdvMeas { H = h, W = subnet ?? null };
+					SdvList = new ObservableCollection<SdvMeas>(sdvCollect.Where(x => x.W != null));
 
-				var sdvCollect = from h in oi11List.Where(x => x.HISpartition == hisH.name)
-								 join w in oi11List.Where(x => x.HISpartition == hisW.name) on new { h.UidMeas, V = h.Id.Remove(0, 1) } equals new { w.UidMeas, V = w.Id.Remove(0, 1) } into gj
-								 from subnet in gj.DefaultIfEmpty()
-								 select new SdvMeas { H = h, W = subnet ?? null };
-				SdvList = new ObservableCollection<SdvMeas>(sdvCollect.Where(x => x.W != null));
-
-				Log($"Чтение ИМ выполнено!");
-				ObservableCollection<OIck07> Oi07List = new ObservableCollection<OIck07>();
-				if (dB != null)
-				{
+					Log($"Чтение ИМ выполнено!");
 					try
 					{
-						Oi07List = dB.GetAllOI();
-						CalcValues = dB.GetCalcValue();
-						OperandCollect = dB.GetOperands();
-						TransmitCollect = dB.GetTransmitOi();
-						AgrCollect = dB.GetIntegParam();
-						DrCollect = dB.GetDrSource();
-						Log($"Чтение БД СК-07 выполнено!");
+						ObservableCollection<OIck07> Oi07List = new ObservableCollection<OIck07>();
+						if (dB != null)
+						{
+							try
+							{
+								Oi07List = dB.GetAllOI();
+								CalcValues = dB.GetCalcValue();
+								OperandCollect = dB.GetOperands();
+								TransmitCollect = dB.GetTransmitOi();
+								AgrCollect = dB.GetIntegParam();
+								DrCollect = dB.GetDrSource();
+								Log($"Чтение БД СК-07 выполнено!");
+							}
+							catch (Exception ex)
+							{
+								Log("Ошибка подключения к СК-07: " + ex.Message);
+							}
+						}
+
+						var twoMeasCollect = from oi11 in sdvCollect.Where(x => x.W == null)
+											 join oi7 in Oi07List on oi11.H.Id equals oi7.Id
+											 select new HalfHourMeas { OIck07 = oi7, OIck11 = oi11.H };
+
+						OiHList = new ObservableCollection<HalfHourMeas>(twoMeasCollect);
 					}
 					catch (Exception ex)
 					{
-						Log("Ошибка подключения к СК-07: " + ex.Message);
+						Log($"Ошибка подключения к СК-07: {ex.Message}");
 					}
+					Log($"Готово!");
 				}
-
-				var twoMeasCollect = from oi11 in sdvCollect.Where(x => x.W == null)
-									 join oi7 in Oi07List on oi11.H.Id equals oi7.Id
-									 select new HalfHourMeas { OIck07 = oi7, OIck11 = oi11.H };
-
-				OiHList = new ObservableCollection<HalfHourMeas>(twoMeasCollect);
-				Log($"Готово!");
 			}
+			catch (Exception ex)
+			{ Log($"Ошибка {ex.Message}"); }
+
 
 		}
 		/// <summary>
@@ -272,7 +295,22 @@ namespace SDV
 				{
 					break;
 				}
+				/*try
+				{
+					var analog = (Analog)mImage.GetObject(h.OIck11.UidMeas);
+					if (analog.PowerSystemResource)
+				}
+				catch { };*/
 
+				if (isRapidBus)//Надстройка для ОДУ
+				{
+					var newW = FuncAIP.CreateRBvalue(h.OIck11);
+					OiHList.Remove(h);
+					SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
+					SdvList.Add(sdv);
+					Log($"Создано {newW.Id} RapidBus");
+					continue;
+				}
 				var isTransmit = TransmitCollect.FirstOrDefault(x => x.Id == h.OIck07.Id);
 				var isAgregH = AgrCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == h.OIck07.Id);
 				var isAgregW = AgrCollect.FirstOrDefault(x => x.CategoryOI + x.IdOI == h.OIck07.Id.Replace('H', 'W'));
@@ -340,14 +378,15 @@ namespace SDV
 							Log($"Ошибка создания агрегированного значения {h.OIck11.Id}: {ex.Message}");
 						}
 					}
-					else {
+					else
+					{
 						OIck11 newW = FuncAIP.CreateRepeatedValue(h.OIck11);
 						OiHList.Remove(h);
 						SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 						SdvList.Add(sdv);
 						Log($"Создано {newW.Id} Повторяемое");
 					};
-					
+
 				}
 
 				else if (isDrW != null)
@@ -404,13 +443,14 @@ namespace SDV
 							else { Log($"Проверить! Ошибка создания  {h.OIck11.Id}"); }
 						}
 						else
-						{  var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW);
+						{
+							var newW = FuncAIP.CreateAgregateValue(h.OIck11, isDrW);
 							OiHList.Remove(h);
 							SdvMeas sdv = new SdvMeas { H = h.OIck11, W = newW };
 							SdvList.Add(sdv);
 							Log($"Создано {newW.Id} Агрегирование");
 						}
-						
+
 					}
 					catch (Exception ex)
 					{
@@ -681,7 +721,7 @@ namespace SDV
 					{
 						sdv.W.MeasValueList.Clear();
 						dB.GetValueOI(dtStart, dtEnd, sdv);
-						
+
 					}
 				}
 				catch (Exception ex)
@@ -712,9 +752,9 @@ namespace SDV
 					try
 					{
 						ToWrite(tokenRead, BaseUrl, sdv.W);
-						Log($"Архив {sdv.W.Id} записан за {sdv.W.MeasValueList.First().Date} - {sdv.W.MeasValueList.Last().Date}"); 
+						Log($"Архив {sdv.W.Id} записан за {sdv.W.MeasValueList.First().Date} - {sdv.W.MeasValueList.Last().Date}");
 					}
-					catch(Exception ex)
+					catch (Exception ex)
 					{ Log($"Ошибка записи {sdv.W.Id}: " + ex.Message); }
 				}
 			}

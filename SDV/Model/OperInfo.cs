@@ -33,6 +33,7 @@ namespace SDV.Model
 
     public class OIck11: IOperInfo
     {
+        public string RootName { get; set; }
         /// <summary>
         /// UID измерения
         /// </summary>

@@ -65,6 +65,8 @@
                             <DataGridTextColumn Binding="{Binding Path=OIck07.CategoryH}" Header="Категория H в СК7"  Width="0.5*" />
                             <DataGridTextColumn Binding="{Binding Path=OIck07.CategoryW}" Header="Категория W в СК7"  Width="0.5*" />
                             <DataGridTextColumn Binding="{Binding Path=OIck11.Class}" Header="Класс ОИ"  Width="0.5*" />
+                            <DataGridTextColumn Binding="{Binding Path=OIck11.RootName}"   Header="Папка"
+                                                Width="0.5*" />
                         </DataGrid.Columns>
                         <DataGrid.ContextMenu>
                             <ContextMenu>
