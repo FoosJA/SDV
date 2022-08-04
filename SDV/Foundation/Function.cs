@@ -94,7 +94,7 @@ namespace SDV.Foundation
 			foreach (var operand in operands)
 			{
 				MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
-				IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
+				IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>().Where(x => x.MeasurementValueType.name != "Дорасчётное значение" && x.MeasurementValueType.name != "Агрегируемое значение");
 				var mvOperand = mvCollect.FirstOrDefault(x => x.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "") == operand.CatOperand + operand.IdOperand);
 				if (mvOperand == null)
 				{
@@ -381,7 +381,7 @@ namespace SDV.Foundation
 				throw new ArgumentException("Не найдены параметры агрегирования. Возможно контроль в СК-07 отключен.");
 			}
 			MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
-			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
+			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>().Where(x => x.MeasurementValueType.name != "Дорасчётное значение" && x.MeasurementValueType.name != "Агрегируемое значение");
 			var sourceAgreg = mvCollect.FirstOrDefault(x => x.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "") == idAgrerSource);
 			if (sourceAgreg == null)
 			{
@@ -489,29 +489,22 @@ namespace SDV.Foundation
 			IntegParam agregVal;
 			string idAgrerSource = drSource.IdSource;
 
-			MetaClass mvClass = ModelImage.MetaData.Classes["MeasurementValue"];
-			IEnumerable<MeasurementValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<MeasurementValue>();
+			MetaClass mvClass = ModelImage.MetaData.Classes["AnalogValue"];
+			IEnumerable<AnalogValue> mvCollect = ModelImage.GetObjects(mvClass).Cast<AnalogValue>().Where(x => x.MeasurementValueType.name != "Дорасчётное значение" && x.MeasurementValueType.name != "Агрегируемое значение");
+
+
 			var sourceAgreg = mvCollect.FirstOrDefault(x => x.externalId?.Replace("Calc", "").Replace("Agr", "").Replace("RB", "") == idAgrerSource);
 			if (sourceAgreg == null)
 			{
-				if (idAgrerSource.Substring(0, 1) == "S")
-				{
-					MetaClass rdvClass = ModelImage.MetaData.Classes["ReplicatedDiscreteValue"];
-					IEnumerable<ReplicatedDiscreteValue> rdvCollect = ModelImage.GetObjects(rdvClass).Cast<ReplicatedDiscreteValue>();
-					sourceAgreg = rdvCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
-				}
-				else
-				{
-					MetaClass ravClass = ModelImage.MetaData.Classes["ReplicatedAnalogValue"];
-					IEnumerable<ReplicatedAnalogValue> ravCollect = ModelImage.GetObjects(ravClass).Cast<ReplicatedAnalogValue>();
-					sourceAgreg = ravCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
-				}
+				MetaClass ravClass = ModelImage.MetaData.Classes["ReplicatedAnalogValue"];
+				IEnumerable<ReplicatedAnalogValue> ravCollect = ModelImage.GetObjects(ravClass).Cast<ReplicatedAnalogValue>();
+				sourceAgreg = ravCollect.FirstOrDefault(x => x.sourceId == idAgrerSource);
 			}
 			if (sourceAgreg == null)
 			{
 				if (CreateRepVal)
 				{
-					sourceAgreg = CreateReplicateMeas(idAgrerSource);
+					sourceAgreg = (AnalogValue)CreateReplicateMeas(idAgrerSource);
 				}
 				else if (sourceAgreg == null)
 				{

@@ -23,7 +23,7 @@ namespace SDV
 	class AppViewModel : AppViewModelBase
 	{
 		#region свойства
-		public bool isRapidBus=true; //Для ОДУ
+		public bool isRapidBus = false; //Для ОДУ
 
 		public List<HalfHourMeas> SelectedHList = new List<HalfHourMeas>();
 
@@ -54,8 +54,10 @@ namespace SDV
 			get { return _selectedSdv; }
 			set
 			{
+
 				_selectedSdv = value;
-				MeasValueH = SelectedSdv.W.MeasValueList;
+				if (value != null)
+					MeasValueH = SelectedSdv.W.MeasValueList;
 				RaisePropertyChanged();
 			}
 		}
@@ -200,7 +202,7 @@ namespace SDV
 							ValueSource = av.MeasurementValueSource.name,
 							Class = nameClass,
 							MeasType = av.Analog.MeasurementType.name,
-							RootName=root,
+							RootName = root,
 							ValueType = av.MeasurementValueType.name
 						};
 
@@ -735,29 +737,37 @@ namespace SDV
 
 		public void WriteArhiveExecute()
 		{
-			TokenResponse tokenRead;
 			try
 			{
-				tokenRead = GetToken(BaseUrl).Result;
+				TokenResponse tokenRead;
+				try
+				{
+					tokenRead = GetToken(BaseUrl).Result;
 
+				}
+				catch (Exception ex)
+				{
+					throw new ArgumentException("Ошибка подключения по web-ep ");
+				}
+				foreach (var sdv in SelectedSdvList)
+				{
+					if (sdv.W.MeasValueList.Count != 0)
+					{
+						try
+						{
+							ToWrite(tokenRead, BaseUrl, sdv.W);
+							Log($"Архив {sdv.W.Id} записан за {sdv.W.MeasValueList.First().Date} - {sdv.W.MeasValueList.Last().Date}");
+						}
+						catch (Exception ex)
+						{ Log($"Ошибка записи {sdv.W.Id}: " + ex.Message); }
+					}
+				}
 			}
 			catch (Exception ex)
 			{
-				throw new ArgumentException("Ошибка подключения по web-ep ");
+				{ Log($"Ошибка в СамРДУ " + ex.Message + ":" + ex.Source); }
 			}
-			foreach (var sdv in SelectedSdvList)
-			{
-				if (sdv.W.MeasValueList.Count != 0)
-				{
-					try
-					{
-						ToWrite(tokenRead, BaseUrl, sdv.W);
-						Log($"Архив {sdv.W.Id} записан за {sdv.W.MeasValueList.First().Date} - {sdv.W.MeasValueList.Last().Date}");
-					}
-					catch (Exception ex)
-					{ Log($"Ошибка записи {sdv.W.Id}: " + ex.Message); }
-				}
-			}
+
 		}
 
 		#endregion
