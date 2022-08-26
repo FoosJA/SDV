@@ -38,8 +38,10 @@ namespace SDV.API
 			ServerName = serverName;
 			try
 			{
-				if (!oi.MeasValueList.All(x => x.QualityCode == 32768))
-					WriteValuesWithClient(tokenResponse, MeasurementValueTypeAPI.Numeric, oi.MeasValueList, oi.UidVal);
+				if (!oi.MeasValueList.All(x => x.QualityCode == 32768))					
+						WriteValuesWithClient(tokenResponse, MeasurementValueTypeAPI.Numeric, oi.MeasValueList, oi.UidVal);
+					
+					
 				else
 				{
 					throw new ArgumentException("Архив не записан. Данные в записываемом архиве недостоверны. ");
@@ -57,43 +59,48 @@ namespace SDV.API
 		/// <param name="type"></param>
 		/// <param name="oiList"></param>
 		/// <param name="uidOi"></param>
-		private static async void WriteValuesWithClient(TokenResponse tokenResponse, MeasurementValueTypeAPI type, IEnumerable<MeasValue> oiList, Guid uidOi)
+		private static async Task WriteValuesWithClient(TokenResponse tokenResponse, MeasurementValueTypeAPI type, IEnumerable<MeasValue> oiList, Guid uidOi)
 		{
-			var httpHandler = new HttpClientHandler()
-			{
-				UseDefaultCredentials = true,
-			};
-			var httpClient = new HttpClient(httpHandler);
-			httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", tokenResponse.AccessToken);
-			SDV.Foundation.Client ck11Cli = new SDV.Foundation.Client(httpClient) { ReadResponseAsString = true, BaseUrl = $"https://{ServerName}/api/public/measurement-values/v2.0" };
-			Body4 body = new Body4();
-
-			foreach (var meas in oiList)
-			{
-				string timeForApi = meas.Date.ToUniversalTime().ToString("s") + "Z";// "2022-02-15T06:00:00Z",
-				MeasurementValueWriteModel writeMeas = new MeasurementValueWriteModel
-				{
-					DateTime = timeForApi,
-					DateTime2 = timeForApi,
-					QualityCodes = 268435458,// meas.QualityCode,
-					Uid = uidOi,
-					Value = meas.Value
-				};
-				body.Values.Add(writeMeas);
-
-			}
 			try
 			{
-				var result = ck11Cli.WriteAsync(type, body).Result;
-				if (result.Errors != null)
+				var httpHandler = new HttpClientHandler()
 				{
-					throw new ArgumentException(result.Errors.First().Detail);
+					UseDefaultCredentials = true,
+				};
+				var httpClient = new HttpClient(httpHandler);
+				httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", tokenResponse.AccessToken);
+				SDV.Foundation.Client ck11Cli = new SDV.Foundation.Client(httpClient) { ReadResponseAsString = true, BaseUrl = $"https://{ServerName}/api/public/measurement-values/v2.0" };
+				Body4 body = new Body4();
+
+				foreach (var meas in oiList)
+				{
+					string timeForApi = meas.Date.ToUniversalTime().ToString("s") + "Z";// "2022-02-15T06:00:00Z",
+					MeasurementValueWriteModel writeMeas = new MeasurementValueWriteModel
+					{
+						DateTime = timeForApi,
+						DateTime2 = timeForApi,
+						QualityCodes = 268435458,// meas.QualityCode,
+						Uid = uidOi,
+						Value = meas.Value
+					};
+					body.Values.Add(writeMeas);
+
+				}
+				try
+				{
+					var result = ck11Cli.WriteAsync(type, body).Result;
+					if (result.Errors != null)
+					{
+						throw new ArgumentException(result.Errors.First().Detail);
+					}
+				}
+				catch (TaskCanceledException ex)
+				{
+					throw new TaskCanceledException();
 				}
 			}
-			catch (TaskCanceledException ex)
-			{
-				throw new TaskCanceledException();
-			}
+			catch(Exception ex)
+			{ throw new ArgumentException(ex.Message); }
 		}
 
 		/// <summary>

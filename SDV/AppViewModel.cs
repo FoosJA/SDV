@@ -765,8 +765,9 @@ namespace SDV
 			}
 			catch (Exception ex)
 			{
-				{ Log($"Ошибка в СамРДУ " + ex.Message + ":" + ex.Source); }
+				{ Log($"Ошибка " + ex.Message + ":" + ex.Source); }
 			}
+			
 
 		}
 

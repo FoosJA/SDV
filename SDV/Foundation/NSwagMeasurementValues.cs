@@ -13,7 +13,8 @@
 
 namespace SDV.Foundation
 {
-    using System = global::System;
+	using System;
+	using System = global::System;
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.9.0 (NJsonSchema v10.4.1.0 (Newtonsoft.Json v11.0.0.0))")]
     public partial class Client
@@ -1157,6 +1158,7 @@ namespace SDV.Foundation
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<Response13> WriteAsync(MeasurementValueTypeAPI valueType, Body4 body, System.Threading.CancellationToken cancellationToken)
         {
+
             if (valueType == null)
                 throw new System.ArgumentNullException("valueType");
 
@@ -1175,10 +1177,10 @@ namespace SDV.Foundation
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                   // var str1 = "{\"writeType\": \"forcedToArchive\",\"values\": [ {\"uid\": \"b317dd66-7b31-475c-9a52-a6af71ad64fa\", \"timeStamp\": \"2022-01-24T11:00:00Z\",\"timeStamp2\": \"2022-01-24T11:00:00Z\", \"qCode\": 268435458, \"value\": 98} ]}";// Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
+                    // var str1 = "{\"writeType\": \"forcedToArchive\",\"values\": [ {\"uid\": \"b317dd66-7b31-475c-9a52-a6af71ad64fa\", \"timeStamp\": \"2022-01-24T11:00:00Z\",\"timeStamp2\": \"2022-01-24T11:00:00Z\", \"qCode\": 268435458, \"value\": 98} ]}";// Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value);
                     //var content_ = new System.Net.Http.StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(body, _settings.Value));
-                   var content_ = new System.Net.Http.StringContent(str);
+                    var content_ = new System.Net.Http.StringContent(str);
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
@@ -1263,6 +1265,8 @@ namespace SDV.Foundation
                     }
                 }
             }
+            catch (Exception ex)
+            { throw new ArgumentException(ex.Message); }
             finally
             {
                 if (disposeClient_)
