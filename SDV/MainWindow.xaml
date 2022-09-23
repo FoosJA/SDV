@@ -32,7 +32,7 @@
             <Button Content=" 1. Создать W " Command="{Binding CreateCommand}" />
             <Button Content=" 2. Записать архив "
                     Command="{Binding WriteCommand}"/>
-            <Button Content=" 3. Исправить привязку " IsEnabled="False" />
+            
             <Separator/>
             <Button Content=" Стоп " Command="{Binding StopLoadDataCommand}" />
         </ToolBar>
